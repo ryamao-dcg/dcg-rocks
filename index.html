@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quarterly Rocks Workbook · Downing Capital</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#F7F6F3;--surf:#FFFFFF;--surf2:#F2F1EE;--surf3:#E8E7E3;
+  --bdr:#E0DED8;--bdr2:#C8C6BF;
+  --tx:#1A1916;--tx2:#6B6860;--tx3:#A8A69E;
+  --navy:#1B2A4A;
+  --blue:#185FA5;--blue-bg:#EBF3FC;--blue-tx:#0C447C;
+  --green:#3B6D11;--green-bg:#EAF3DE;--green-tx:#27500A;
+  --amber:#854F0B;--amber-bg:#FAEEDA;--amber-tx:#633806;
+  --red:#A32D2D;--red-bg:#FCEBEB;
+  --purple:#534AB7;--purple-bg:#EEEDFE;--purple-tx:#3C3489;
+  --teal:#0F6E56;--teal-bg:#E1F5EE;--teal-tx:#085041;
+  --r:8px;--rlg:12px;
+  --font:'DM Sans',system-ui,sans-serif;--mono:'DM Mono',monospace;
+  --shadow:0 1px 2px rgba(20,18,14,.04),0 2px 8px rgba(20,18,14,.05);
+  --shadow-lg:0 4px 24px rgba(20,18,14,.10);
+  --sb-w:236px;
+}
+[data-theme="dark"]{
+  --bg:#16161A;--surf:#1F1F25;--surf2:#26262E;--surf3:#30303A;
+  --bdr:#33333D;--bdr2:#45454F;
+  --tx:#ECEBE8;--tx2:#A3A19C;--tx3:#6E6C68;
+  --navy:#C7D2E8;
+  --blue:#5B9BE0;--blue-bg:#1B2D40;--blue-tx:#9CC4EE;
+  --green:#7FB04A;--green-bg:#1F2D16;--green-tx:#A6D178;
+  --amber:#D49A4B;--amber-bg:#352713;--amber-tx:#E6BC7E;
+  --red:#D86A6A;--red-bg:#3A1E1E;
+  --purple:#9B92E8;--purple-bg:#262348;--purple-tx:#B7AFF2;
+  --teal:#4FB89A;--teal-bg:#13332B;--teal-tx:#7FD4BC;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 2px 8px rgba(0,0,0,.3);
+  --shadow-lg:0 4px 24px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--font);font-size:14px;color:var(--tx);background:var(--bg);line-height:1.45;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:6px;border:2px solid var(--bg)}
+::-webkit-scrollbar-track{background:transparent}
+a{color:inherit}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit;font-size:13px;color:var(--tx)}
+
+/* ===== Layout ===== */
+.app{display:flex;min-height:100vh}
+.sidebar{width:var(--sb-w);flex:0 0 var(--sb-w);background:var(--surf);border-right:1px solid var(--bdr);
+  display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;transition:margin .2s}
+.brand{padding:18px 18px 14px;display:flex;align-items:center;gap:10px}
+.brand .logo{width:30px;height:30px;border-radius:8px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex:0 0 auto}
+[data-theme="dark"] .brand .logo{color:#16161A}
+.brand .bname{font-weight:600;font-size:14px;color:var(--navy);letter-spacing:-.01em}
+.brand .bq{font-size:11px;color:var(--tx2);font-family:var(--mono)}
+.nav{flex:1;padding:6px 10px 14px}
+.nav .grp{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--tx3);font-weight:600;padding:14px 10px 6px}
+.nav a{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:var(--r);color:var(--tx2);
+  text-decoration:none;font-size:13px;font-weight:500;margin:1px 0;transition:background .12s,color .12s;position:relative}
+.nav a:hover{background:var(--surf2);color:var(--tx)}
+.nav a.on{background:var(--blue-bg);color:var(--blue-tx);font-weight:600}
+.nav a svg{width:16px;height:16px;flex:0 0 auto;opacity:.85}
+.nav a .badge{margin-left:auto;font-size:10px;font-family:var(--mono);background:var(--surf3);color:var(--tx2);
+  padding:1px 6px;border-radius:20px;min-width:18px;text-align:center}
+.nav a.on .badge{background:var(--blue);color:#fff}
+.sb-foot{padding:10px;border-top:1px solid var(--bdr);display:flex;gap:6px}
+.sb-foot button{flex:1;background:var(--surf2);border:1px solid var(--bdr);color:var(--tx2);border-radius:var(--r);
+  padding:7px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:500}
+.sb-foot button:hover{background:var(--surf3);color:var(--tx)}
+.sb-foot button svg{width:15px;height:15px}
+
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--bg) 82%,transparent);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--bdr);padding:13px 26px;display:flex;align-items:center;gap:16px}
+.topbar .titlewrap{min-width:0}
+.topbar h1{font-size:18px;font-weight:600;letter-spacing:-.015em;line-height:1.2}
+.topbar .sub{font-size:12.5px;color:var(--tx2);margin-top:1px}
+.topbar .spacer{flex:1}
+.search{position:relative;width:230px}
+.search input{width:100%;background:var(--surf);border:1px solid var(--bdr);border-radius:20px;padding:8px 12px 8px 32px;font-size:13px;color:var(--tx);transition:border .12s,box-shadow .12s}
+.search input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-bg)}
+.search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--tx3)}
+.sync{font-size:11px;font-family:var(--mono);color:var(--tx2);display:flex;align-items:center;gap:6px;white-space:nowrap}
+.sync .dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+.sync.err .dot{background:var(--red)}.sync.load .dot{background:var(--amber)}
+.menu-btn{display:none;background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r);width:34px;height:34px;align-items:center;justify-content:center}
+.menu-btn svg{width:18px;height:18px}
+
+.content{flex:1;padding:24px 26px 60px;max-width:1280px;width:100%}
+.panel{display:none;animation:fade .25s ease}
+.panel.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+/* ===== Buttons ===== */
+.btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--bdr);background:var(--surf);color:var(--tx);
+  border-radius:var(--r);padding:8px 13px;font-size:13px;font-weight:500;transition:.12s}
+.btn:hover{background:var(--surf2);border-color:var(--bdr2)}
+.btn svg{width:15px;height:15px}
+.btn.pri{background:var(--navy);color:#fff;border-color:var(--navy)}
+.btn.pri:hover{filter:brightness(1.12)}
+[data-theme="dark"] .btn.pri{color:#16161A}
+.btn.sm{padding:5px 10px;font-size:12px}
+.btn-del{background:none;border:none;color:var(--tx3);width:26px;height:26px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:15px;line-height:1}
+.btn-del:hover{background:var(--red-bg);color:var(--red)}
+
+/* ===== Cards / sections ===== */
+.card{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rlg);box-shadow:var(--shadow)}
+.sec-head{display:flex;align-items:center;gap:12px;margin:26px 0 12px}
+.sec-head:first-child{margin-top:0}
+.sec-head h2{font-size:15px;font-weight:600;letter-spacing:-.01em}
+.sec-head .sub{font-size:12.5px;color:var(--tx2)}
+.sec-head .spacer{flex:1}
+
+/* stat cards */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:8px}
+.stat{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rlg);padding:13px 15px;cursor:pointer;transition:.12s;box-shadow:var(--shadow)}
+.stat:hover{border-color:var(--bdr2)}
+.stat.on{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue-bg)}
+.stat .n{font-size:24px;font-weight:600;font-family:var(--mono);letter-spacing:-.02em}
+.stat .l{font-size:11.5px;color:var(--tx2);margin-top:2px;display:flex;align-items:center;gap:5px}
+.stat .l .sw{width:8px;height:8px;border-radius:2px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px}
+.kpi{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rlg);padding:18px;box-shadow:var(--shadow)}
+.kpi .lab{font-size:12px;color:var(--tx2);font-weight:500}
+.kpi .big{font-size:30px;font-weight:600;font-family:var(--mono);letter-spacing:-.02em;margin-top:6px;line-height:1}
+.kpi .meta{font-size:12px;color:var(--tx2);margin-top:6px}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+@media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr}}
+.chartbox{padding:18px}
+.chartbox h3{font-size:13px;font-weight:600;margin-bottom:14px;color:var(--tx)}
+.chartbox .cv{position:relative;height:220px}
+
+/* progress bar */
+.prog{height:7px;background:var(--surf3);border-radius:20px;overflow:hidden}
+.prog>span{display:block;height:100%;background:var(--green);border-radius:20px;transition:width .4s}
+
+/* pills */
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;white-space:nowrap;font-family:var(--mono)}
+.p-ns{background:var(--surf3);color:var(--tx2)}
+.p-up{background:var(--red-bg);color:var(--red)}
+.p-ot{background:var(--green-bg);color:var(--green-tx)}
+.p-ar{background:var(--amber-bg);color:var(--amber-tx)}
+.p-dn{background:var(--blue-bg);color:var(--blue-tx)}
+.p-lead{background:var(--purple-bg);color:var(--purple-tx)}
+.p-lag{background:var(--teal-bg);color:var(--teal-tx)}
+.tag{font-size:10.5px;font-family:var(--mono);padding:1px 6px;border-radius:5px;background:var(--surf3);color:var(--tx2)}
+.tag.over{background:var(--red-bg);color:var(--red)}
+.tag.soon{background:var(--amber-bg);color:var(--amber-tx)}
+
+/* rock cards */
+.rocklist{display:flex;flex-direction:column;gap:9px}
+.rock{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rlg);box-shadow:var(--shadow);overflow:hidden}
+.rock.unp{background:linear-gradient(0deg,var(--red-bg),var(--red-bg)),var(--surf);background-blend-mode:multiply}
+.rock-hd{display:flex;align-items:center;gap:13px;padding:14px 16px;cursor:pointer}
+.rock-hd .chev{width:16px;height:16px;color:var(--tx3);transition:transform .15s;flex:0 0 auto}
+.rock.open .rock-hd .chev{transform:rotate(90deg)}
+.rock-hd .ttl{font-weight:600;font-size:14px;outline:none;flex:0 1 auto;min-width:40px}
+.rock-hd .ttl:focus{background:var(--blue-bg);border-radius:4px;padding:0 3px}
+.rock-hd .owner{font-size:12px;color:var(--tx2);display:flex;align-items:center;gap:5px}
+.rock-hd .spacer{flex:1}
+.rock-hd .progwrap{width:90px}
+.rock-hd .pct{font-size:11px;font-family:var(--mono);color:var(--tx2);width:34px;text-align:right}
+.rock-hd .score{font-size:11px;font-family:var(--mono);background:var(--surf3);padding:2px 7px;border-radius:6px;color:var(--tx2)}
+.avatar{width:20px;height:20px;border-radius:50%;background:var(--blue-bg);color:var(--blue-tx);font-size:9.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}
+.rock-bd{display:none;border-top:1px solid var(--bdr);padding:0}
+.rock.open .rock-bd{display:block}
+.subtabs{display:flex;gap:4px;padding:10px 16px 0}
+.subtabs button{background:none;border:none;padding:6px 11px;font-size:12.5px;font-weight:500;color:var(--tx2);border-radius:6px}
+.subtabs button.on{background:var(--surf2);color:var(--tx)}
+.subpane{padding:12px 16px 16px;display:none}
+.subpane.on{display:block}
+
+/* tables */
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:600;padding:7px 9px;border-bottom:1px solid var(--bdr)}
+.tbl td{padding:8px 9px;border-bottom:1px solid var(--bdr);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--surf2)}
+.tbl input,.tbl select{background:transparent;border:1px solid transparent;border-radius:6px;padding:4px 6px;width:100%}
+.tbl input:hover,.tbl select:hover{border-color:var(--bdr)}
+.tbl input:focus,.tbl select:focus{outline:none;border-color:var(--blue);background:var(--surf)}
+.tbl .ce{outline:none;padding:2px 4px;border-radius:4px;min-height:20px}
+.tbl .ce:focus{background:var(--blue-bg)}
+.tbl .num{font-family:var(--mono);text-align:center}
+.tablecard{overflow-x:auto}
+.empty{text-align:center;padding:40px 20px;color:var(--tx3);font-size:13px}
+.empty svg{width:34px;height:34px;opacity:.5;margin-bottom:8px}
+
+/* add forms */
+.addform{background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--rlg);padding:15px;margin-bottom:16px;display:none}
+.addform.on{display:block}
+.addform .row{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:10px}
+.addform label{font-size:11px;color:var(--tx2);font-weight:500;display:block;margin-bottom:4px}
+.addform input,.addform select,.addform textarea{width:100%;background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r);padding:8px 10px}
+.addform input:focus,.addform select:focus,.addform textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-bg)}
+.addform .acts{display:flex;gap:8px;justify-content:flex-end}
+
+/* milestone grid */
+.msgrid{overflow-x:auto}
+.mstable{border-collapse:collapse;font-size:11px;min-width:100%}
+.mstable th{padding:5px 4px;font-family:var(--mono);font-size:10px;color:var(--tx3);text-align:center;white-space:nowrap}
+.mstable th.now{color:var(--blue);font-weight:700}
+.mstable td{padding:5px 4px;text-align:center}
+.mstable td.name{text-align:left;font-size:12px;font-family:var(--font);white-space:nowrap;padding-right:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis}
+.dot{width:15px;height:15px;border-radius:50%;border:2px solid var(--bdr2);cursor:pointer;display:inline-block;background:var(--surf);transition:.1s}
+.dot:hover{transform:scale(1.25)}
+.dot.done{background:var(--green);border-color:var(--green)}
+.dot.pre{border-color:var(--green)}
+.dot.tgt{border-color:var(--red);border-style:dashed}
+.dot.nowcol{box-shadow:0 0 0 3px var(--blue-bg)}
+
+/* filters */
+.filt{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.filt select{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r);padding:7px 10px}
+.filt .lbl{font-size:12px;color:var(--tx2)}
+
+/* dashboard group */
+.dgrp{margin-bottom:12px}
+.dgrp-hd{display:flex;align-items:center;gap:11px;padding:12px 15px;background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rlg);cursor:pointer;box-shadow:var(--shadow)}
+.dgrp-hd .nm{font-weight:600;font-size:14px}
+.dgrp-hd .ct{font-size:11px;font-family:var(--mono);color:var(--tx2)}
+.dgrp-hd .spacer{flex:1}
+.dgrp-hd .mini{display:flex;gap:5px}
+.dgrp-hd .mini .pill{font-size:10px}
+.dgrp-bd{padding:8px 0 0 8px;display:none}
+.dgrp.open .dgrp-bd{display:block}
+.dgrp.open .dgrp-hd .chev{transform:rotate(90deg)}
+.dgrp-hd .chev{width:15px;height:15px;color:var(--tx3);transition:transform .15s}
+.drow{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--bdr);font-size:13px}
+.drow:last-child{border-bottom:none}
+.drow .grow{flex:1;min-width:0}
+.drow .rname{font-size:11px;color:var(--tx2)}
+
+/* modal */
+.overlay{position:fixed;inset:0;background:rgba(20,18,14,.4);backdrop-filter:blur(2px);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+.overlay.on{display:flex}
+.modal{background:var(--surf);border-radius:var(--rlg);box-shadow:var(--shadow-lg);width:100%;max-width:420px;padding:22px}
+.modal h3{font-size:16px;font-weight:600;margin-bottom:4px}
+.modal p{font-size:13px;color:var(--tx2);margin-bottom:16px}
+.modal label{font-size:11px;color:var(--tx2);font-weight:500;display:block;margin-bottom:5px}
+.modal input{width:100%;background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--r);padding:9px 11px;margin-bottom:16px}
+.modal .acts{display:flex;gap:9px;justify-content:flex-end}
+.hint{font-size:11.5px;color:var(--tx2);background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--r);padding:8px 11px;margin-bottom:12px;display:flex;gap:7px;align-items:flex-start}
+.hint svg{width:14px;height:14px;flex:0 0 auto;margin-top:1px;color:var(--tx3)}
+
+@media(max-width:820px){
+  .sidebar{position:fixed;z-index:60;margin-left:calc(-1 * var(--sb-w));box-shadow:var(--shadow-lg)}
+  .sidebar.open{margin-left:0}
+  .menu-btn{display:inline-flex}
+  .search{width:150px}
+  .content{padding:18px 16px 50px}
+  .topbar{padding:11px 16px}
+  .scrim{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:55;display:none}
+  .scrim.on{display:block}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="logo">DC</div>
+      <div>
+        <div class="bname">Downing Capital</div>
+        <div class="bq" id="sb-quarter">Q2 2026</div>
+      </div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="sb-foot">
+      <button id="theme-btn" title="Toggle theme"><svg id="theme-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>Theme</button>
+      <button id="export-btn" title="Export data"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>Export</button>
+      <button id="settings-btn" title="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="menu-btn" id="menu-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg></button>
+      <div class="titlewrap">
+        <h1 id="pg-title">Overview</h1>
+        <div class="sub" id="pg-sub">Quarter at a glance</div>
+      </div>
+      <div class="spacer"></div>
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="search" placeholder="Search rocks, owners…" autocomplete="off">
+      </div>
+      <button class="btn pri" id="topbar-action" style="display:none"></button>
+      <div class="sync" id="sync"><span class="dot"></span><span id="sync-txt">Saved</span></div>
+    </header>
+    <main class="content" id="content"><!--PANELS--></main>
+  </div>
+</div>
+
+<!-- Settings modal -->
+<div class="overlay" id="modal-settings">
+  <div class="modal">
+    <h3>Settings</h3>
+    <p>Configure the workbook for this quarter.</p>
+    <label>Quarter</label>
+    <input id="set-q" placeholder="e.g. Q2 2026">
+    <label>Quarter start date (week 1)</label>
+    <input id="set-start" type="date">
+    <div class="acts">
+      <button class="btn" onclick="closeModal('modal-settings')">Cancel</button>
+      <button class="btn pri" onclick="saveSettings()">Save</button>
+    </div>
+  </div>
+</div>
+<!-- Confirm modal -->
+<div class="overlay" id="modal-confirm">
+  <div class="modal">
+    <h3 id="cf-title">Delete?</h3>
+    <p id="cf-msg"></p>
+    <div class="acts">
+      <button class="btn" onclick="closeModal('modal-confirm')">Cancel</button>
+      <button class="btn pri" id="cf-ok" style="background:var(--red);border-color:var(--red);color:#fff">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   Downing Capital — Quarterly Rocks Workbook (improved)
+   Backward-compatible with the original dc_rocks_v2 data model.
+   ============================================================ */
+
+/* ---- Persistence config (same backend as original) ---- */
+var STORE='dc_rocks_v2';
+var DATA_VERSION=3;
+var SB_URL='https://whchshmrmspsnkwinhgd.supabase.co';
+var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZWYiOiJ3aGNoc2htcm1zcHNua3dpbmhnZCIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzM1MzI5NjAwLCJleHAiOjIwNTA5MDU2MDB9.GkRDyiMyAmVW-o_raylWj06JMsTw8FljhrEM2lvUkqg';
+var SB_TABLE='rocks_workbook';
+var SB_ID='downing_capital';
+var SB_ENABLED=true; /* set false to run purely on localStorage */
+
+/* ---- Enums ---- */
+var ROCK_TYPES=['ideation','talent','build','ops','ceo'];
+var ROCK_LABELS={ideation:'Ideation Rocks',talent:'Talent Rocks',build:'Build Rocks',ops:'Operations Rocks',ceo:'Office CEO Rocks'};
+var ROCK_ARR={ideation:'ideationRocks',talent:'talentRocks',build:'buildRocks',ops:'opsRocks',ceo:'ceoRocks'};
+var STATUSES=['Not Started','On Track','At Risk','Done'];
+var PORTCOS=['Wellnest','Portoro','Bloomwell','Immersiv','Ownershift','Cedar Brands','Calibright','MARO'];
+var BETTER_LEVELS=['Critical','High','Medium','Low'];
+var BETTER_STATUS=['Suggested','In Progress','Implemented'];
+var BLOCK_STATUS=['Blocked','In Progress','Resolved'];
+var SUP_TYPES=['Intro','Decision','Budget','Resource','Other'];
+var SUP_STATUS=['Needed','In Progress','Resolved'];
+var NS_STATUS=['On Track','At Risk','Off Track'];
+var PILLCLS={Done:'p-dn','On Track':'p-ot','At Risk':'p-ar','Not Started':'p-ns','Unplanned':'p-up'};
+var SORTORD={'At Risk':0,'On Track':1,'Not Started':2,'Done':3,'Unplanned':4};
+
+/* ---- State ---- */
+var D={
+  quarter:'Q2 2026',
+  qStart:'2026-04-03',
+  ns:[],
+  ideationRocks:[],talentRocks:[],buildRocks:[],opsRocks:[],ceoRocks:[],
+  better:[],blockers:[],support:[],
+  expanded:{},srTab:{},arCollapsed:{},indCollapsed:{},portcoCollapsed:{},activeFilter:{}
+};
+
+/* ---- Helpers ---- */
+function uid(){return '_'+Math.random().toString(36).substr(2,9);}
+function $(s,r){return (r||document).querySelector(s);}
+function $all(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function el(tag,cls,html){var e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e;}
+function getRocks(type){return D[ROCK_ARR[type]]||[];}
+function initials(name){if(!name)return '?';var p=name.trim().split(/\s+/);return ((p[0]||'')[0]||'')+((p[1]||'')[0]||'');}
+function chip(status){var cls=PILLCLS[status]||'p-ns';return '<span class="pill '+cls+'">'+esc(status)+'</span>';}
+
+/* date helpers — weeks derived from quarter start (improvement over hardcoded year) */
+function weekDates(){
+  var out=[];var base=D.qStart?new Date(D.qStart+'T00:00:00'):new Date(2026,3,3);
+  for(var i=0;i<12;i++){var d=new Date(base);d.setDate(base.getDate()+i*7);out.push(d);}
+  return out;
+}
+function fmtWeek(d){return ('0'+d.getDate()).slice(-2)+'.'+('0'+(d.getMonth()+1)).slice(-2);}
+function fmtDate(s){if(!s)return '';var d=new Date(s+'T00:00:00');if(isNaN(d))return s;return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});}
+function today0(){var t=new Date();t.setHours(0,0,0,0);return t;}
+function daysUntil(s){if(!s)return null;var d=new Date(s+'T00:00:00');if(isNaN(d))return null;return Math.round((d-today0())/86400000);}
+
+/* ---- Sub-rock / rock status logic (matches original roll-up) ---- */
+function rockStatus(rock){
+  var subs=rock.subrocks||[];
+  if(!subs.length)return 'Unplanned';
+  var st=subs.map(function(s){return s.doneDate?'Done':(s.status||'Not Started');});
+  if(st.every(function(s){return s==='Done';}))return 'Done';
+  if(st.some(function(s){return s==='At Risk';}))return 'At Risk';
+  if(st.some(function(s){return s==='On Track'||s==='Done';}))return 'On Track';
+  return 'Not Started';
+}
+function rockPct(rock){
+  var subs=rock.subrocks||[];if(!subs.length)return 0;
+  var done=subs.filter(function(s){return s.doneDate||s.status==='Done';}).length;
+  return Math.round(done/subs.length*100);
+}
+function subStatus(s){return s.doneDate?'Done':(s.status||'Not Started');}
+
+/* ============================================================
+   Persistence — localStorage immediate + Supabase debounced
+   ============================================================ */
+var _saveTimer=null,_booted=false;
+function setSync(state,msg){
+  var n=$('#sync');if(!n)return;n.className='sync'+(state==='err'?' err':state==='load'?' load':'');
+  $('#sync-txt').textContent=msg||(state==='err'?'Sync error':state==='load'?'Saving…':'Saved');
+}
+function applyData(s){
+  if(!s)return;
+  ['quarter','qStart','ns','ideationRocks','talentRocks','buildRocks','opsRocks','ceoRocks',
+   'better','blockers','support','expanded','srTab','arCollapsed','indCollapsed','portcoCollapsed','activeFilter']
+   .forEach(function(k){ if(s[k]!==undefined && s[k]!==null) D[k]=s[k]; });
+}
+function save(){
+  if(!_booted)return;
+  D._v=DATA_VERSION;
+  try{localStorage.setItem(STORE,JSON.stringify(D));}catch(e){}
+  if(!SB_ENABLED)return;
+  setSync('load');
+  clearTimeout(_saveTimer);
+  _saveTimer=setTimeout(pushSupabase,800);
+}
+function pushSupabase(){
+  fetch(SB_URL+'/rest/v1/'+SB_TABLE,{
+    method:'POST',
+    headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},
+    body:JSON.stringify({id:SB_ID,data:D,updated_at:new Date().toISOString()})
+  }).then(function(r){setSync(r.ok?'ok':'err');}).catch(function(){setSync('err');});
+}
+function loadSupabase(){
+  /* returns {ok:true,data:obj|null} on success, {ok:false} on error */
+  if(!SB_ENABLED)return Promise.resolve({ok:true,data:null});
+  return fetch(SB_URL+'/rest/v1/'+SB_TABLE+'?id=eq.'+SB_ID+'&select=data',{
+    headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}
+  }).then(function(r){if(!r.ok)return {ok:false};return r.json().then(function(j){return {ok:true,data:(j&&j[0]&&j[0].data)?j[0].data:null};});})
+    .catch(function(){return {ok:false};});
+}
+
+/* ============================================================
+   Navigation + page shells
+   ============================================================ */
+var ICONS={
+  overview:'<path d="M3 3h7v7H3zM14 3h7v4h-7zM14 10h7v11h-7zM3 14h7v7H3z"/>',
+  northstar:'<path d="M12 2l2.4 6.9H22l-6 4.5 2.3 7L12 16l-6.3 4.4L8 13.4 2 8.9h7.6z"/>',
+  rocks:'<path d="M2 22 13 3l4 7 5 12z"/><path d="M9.5 13 6 22"/>',
+  layers:'<path d="m12 2 9 5-9 5-9-5z"/><path d="m3 12 9 5 9-5M3 17l9 5 9-5"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  grid:'<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>',
+  spark:'<path d="M13 2 3 14h9l-1 8 10-12h-9z"/>',
+  block:'<circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/>',
+  hand:'<path d="M18 11V6a2 2 0 0 0-4 0M14 10V4a2 2 0 0 0-4 0v2M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>'
+};
+function ic(k){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+(ICONS[k]||'')+'</svg>';}
+
+var NAV=[
+  {grp:'',items:[{id:'overview',label:'Overview',icon:'overview'}]},
+  {grp:'Metrics',items:[{id:'northstar',label:'North Star',icon:'northstar'}]},
+  {grp:'Rocks',items:[
+    {id:'allrocks',label:'All Rocks',icon:'layers'},
+    {id:'ideation',label:'Ideation',icon:'rocks'},
+    {id:'talent',label:'Talent',icon:'rocks'},
+    {id:'build',label:'Build',icon:'rocks'},
+    {id:'ops',label:'Operations',icon:'rocks'},
+    {id:'ceo',label:'Office CEO',icon:'rocks'}
+  ]},
+  {grp:'Dashboards',items:[
+    {id:'dash-ind',label:'By Individual',icon:'user'},
+    {id:'dash-portco',label:'By PortCo',icon:'grid'}
+  ]},
+  {grp:'Operations',items:[
+    {id:'better',label:'1% Better',icon:'spark'},
+    {id:'blockers',label:'Blockers',icon:'block'},
+    {id:'support',label:'Support',icon:'hand'}
+  ]}
+];
+var PAGE_META={
+  overview:['Overview','Quarter at a glance'],
+  northstar:['North Star Metrics','Leading & lagging indicators — tracked weekly'],
+  allrocks:['All Rocks','Every Rock across the studio, ranked by score'],
+  ideation:['Ideation Rocks','Discovering the next opportunities'],
+  talent:['Talent Rocks','Building the team and culture'],
+  build:['Build Rocks','Shipping product and capability'],
+  ops:['Operations Rocks','Running the studio efficiently'],
+  ceo:['Office CEO Rocks','Leadership priorities'],
+  'dash-ind':['By Individual','Workload and completion by owner'],
+  'dash-portco':['By PortCo','Sub-Rocks grouped by portfolio company'],
+  better:['1% Better','Small improvements compound to 37x by year end'],
+  blockers:['Blockers','Log anything stopping a Rock'],
+  support:['Support Needed','What does the team need from leadership?']
+};
+var ROCK_PANELS={allrocks:1,ideation:1,talent:1,build:1,ops:1,ceo:1};
+
+function buildNav(){
+  var nav=$('#nav');nav.innerHTML='';
+  NAV.forEach(function(sec){
+    if(sec.grp)nav.appendChild(el('div','grp',sec.grp));
+    sec.items.forEach(function(it){
+      var a=el('a','');a.href='#'+it.id;a.dataset.tab=it.id;
+      a.innerHTML=ic(it.icon)+'<span>'+it.label+'</span><span class="badge" data-badge="'+it.id+'" style="display:none"></span>';
+      a.onclick=function(e){e.preventDefault();switchTab(it.id);if(window.innerWidth<=820)toggleSidebar(false);};
+      nav.appendChild(a);
+    });
+  });
+}
+function buildPanels(){
+  var c=$('#content');
+  var ids=['overview','northstar','allrocks','ideation','talent','build','ops','ceo','dash-ind','dash-portco','better','blockers','support'];
+  c.innerHTML=ids.map(function(id){return '<section class="panel" id="panel-'+id+'"></section>';}).join('');
+}
+var CUR='overview';
+function switchTab(id){
+  CUR=id;
+  $all('.panel').forEach(function(p){p.classList.remove('active');});
+  var p=$('#panel-'+id);if(p)p.classList.add('active');
+  $all('#nav a').forEach(function(a){a.classList.toggle('on',a.dataset.tab===id);});
+  var m=PAGE_META[id]||[id,''];
+  $('#pg-title').textContent=m[0];$('#pg-sub').textContent=m[1];
+  var act=$('#topbar-action');
+  if(ROCK_PANELS[id]&&id!=='allrocks'){act.style.display='';act.innerHTML=ic2('plus')+'Add Rock';act.onclick=function(){showAddRock(id);};}
+  else if(id==='northstar'){act.style.display='';act.innerHTML=ic2('plus')+'Add metric';act.onclick=addNSRow;}
+  else{act.style.display='none';}
+  window.scrollTo(0,0);
+  render(id);
+}
+function ic2(k){var p={plus:'<path d="M12 5v14M5 12h14"/>'}[k]||'';return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">'+p+'</svg>';}
+
+/* ============================================================
+   Router to render functions
+   ============================================================ */
+function render(id){
+  if(id==='overview')renderOverview();
+  else if(id==='northstar')renderNorthStar();
+  else if(id==='allrocks')renderAllRocks();
+  else if(ROCK_PANELS[id])renderRockPanel(id);
+  else if(id==='dash-ind')renderDashInd();
+  else if(id==='dash-portco')renderDashPortco();
+  else if(id==='better')renderBetter();
+  else if(id==='blockers')renderBlockers();
+  else if(id==='support')renderSupport();
+  updateBadges();
+}
+function rerenderCurrent(){render(CUR);}
+function updateBadges(){
+  var counts={};
+  ROCK_TYPES.forEach(function(t){counts[t]=getRocks(t).length;});
+  counts.allrocks=ROCK_TYPES.reduce(function(a,t){return a+counts[t];},0);
+  counts.better=D.better.length;counts.blockers=D.blockers.filter(function(b){return b.status!=='Resolved';}).length;
+  counts.support=D.support.filter(function(s){return s.status!=='Resolved';}).length;
+  counts.northstar=D.ns.length;
+  $all('[data-badge]').forEach(function(b){
+    var v=counts[b.dataset.badge];
+    if(v){b.textContent=v;b.style.display='';}else{b.style.display='none';}
+  });
+}
+
+/* ============================================================
+   Aggregation helpers
+   ============================================================ */
+function allRocks(){var a=[];ROCK_TYPES.forEach(function(t){getRocks(t).forEach(function(r){a.push({rock:r,type:t});});});return a;}
+function allSubs(){var a=[];ROCK_TYPES.forEach(function(t){getRocks(t).forEach(function(r){(r.subrocks||[]).forEach(function(s){a.push({sub:s,rock:r,type:t});});});});return a;}
+function statusCounts(rocks){
+  var c={Unplanned:0,'Not Started':0,'On Track':0,'At Risk':0,Done:0};
+  rocks.forEach(function(r){var s=rockStatus(r);c[s]=(c[s]||0)+1;});return c;
+}
+function chartColors(){
+  var cs=getComputedStyle(document.documentElement);
+  return {
+    grid:cs.getPropertyValue('--bdr').trim(),tx:cs.getPropertyValue('--tx2').trim(),
+    green:cs.getPropertyValue('--green').trim(),amber:cs.getPropertyValue('--amber').trim(),
+    red:cs.getPropertyValue('--red').trim(),blue:cs.getPropertyValue('--blue').trim(),
+    grey:cs.getPropertyValue('--bdr2').trim(),purple:cs.getPropertyValue('--purple').trim(),teal:cs.getPropertyValue('--teal').trim()
+  };
+}
+var _charts={};
+function makeChart(id,cfg){
+  var cv=document.getElementById(id);if(!cv||!window.Chart)return;
+  if(_charts[id]){_charts[id].destroy();}
+  _charts[id]=new Chart(cv.getContext('2d'),cfg);
+}
+
+/* ============================================================
+   OVERVIEW
+   ============================================================ */
+function renderOverview(){
+  var p=$('#panel-overview');
+  var rocks=allRocks().map(function(x){return x.rock;});
+  var subs=allSubs();
+  var total=rocks.length;
+  var c=statusCounts(rocks);
+  var doneRocks=c.Done;
+  var subDone=subs.filter(function(x){return subStatus(x.sub)==='Done';}).length;
+  var pctSub=subs.length?Math.round(subDone/subs.length*100):0;
+  var atRisk=c['At Risk'],unplanned=c.Unplanned;
+
+  // due-date alerts
+  var over=[],soon=[];
+  subs.forEach(function(x){
+    if(subStatus(x.sub)==='Done')return;
+    var d=daysUntil(x.sub.targetDate);if(d===null)return;
+    if(d<0)over.push({x:x,d:d});else if(d<=14)soon.push({x:x,d:d});
+  });
+  over.sort(function(a,b){return a.d-b.d;});soon.sort(function(a,b){return a.d-b.d;});
+
+  var openBlockers=D.blockers.filter(function(b){return b.status!=='Resolved';}).length;
+  var openSupport=D.support.filter(function(s){return s.status!=='Resolved';}).length;
+
+  var html='';
+  html+='<div class="kpis">';
+  html+=kpi('Rocks this quarter',total,total?(doneRocks+' done · '+atRisk+' at risk'):'No rocks yet');
+  html+=kpi('Quarter completion',pctSub+'%',subDone+' of '+subs.length+' sub-rocks done','prog'+pctSub);
+  html+=kpi('Needs attention',(atRisk+unplanned),atRisk+' at risk · '+unplanned+' unplanned',null,(atRisk+unplanned)>0?'amber':'');
+  html+=kpi('Open requests',(openBlockers+openSupport),openBlockers+' blockers · '+openSupport+' support',null,(openBlockers+openSupport)>0?'amber':'');
+  html+='</div>';
+
+  html+='<div class="grid3">';
+  html+='<div class="card chartbox"><h3>Sub-Rock progress by category</h3><div class="cv"><canvas id="ov-cat"></canvas></div></div>';
+  html+='<div class="card chartbox"><h3>Overall status</h3><div class="cv"><canvas id="ov-status"></canvas></div></div>';
+  html+='</div>';
+
+  // alerts
+  html+='<div class="grid2" style="margin-top:16px">';
+  html+='<div class="card" style="padding:16px"><div class="sec-head" style="margin:0 0 10px"><h2>Overdue</h2><span class="sub">'+over.length+'</span></div>';
+  if(!over.length)html+='<div class="empty" style="padding:18px">Nothing overdue. 🎯</div>';
+  else html+=over.slice(0,7).map(function(o){return alertRow(o.x,o.d);}).join('');
+  html+='</div>';
+  html+='<div class="card" style="padding:16px"><div class="sec-head" style="margin:0 0 10px"><h2>Due within 2 weeks</h2><span class="sub">'+soon.length+'</span></div>';
+  if(!soon.length)html+='<div class="empty" style="padding:18px">Nothing due soon.</div>';
+  else html+=soon.slice(0,7).map(function(o){return alertRow(o.x,o.d);}).join('');
+  html+='</div></div>';
+
+  // North star snapshot
+  if(D.ns.length){
+    html+='<div class="sec-head"><h2>North Star</h2><span class="sub">cumulative vs target</span></div>';
+    html+='<div class="card chartbox"><div class="cv" style="height:240px"><canvas id="ov-ns"></canvas></div></div>';
+  }
+
+  p.innerHTML=html;
+  drawOverviewCharts();
+}
+function kpi(lab,big,meta,progId,tone){
+  var t=tone==='amber'?'style="color:var(--amber)"':'';
+  var h='<div class="kpi"><div class="lab">'+lab+'</div><div class="big" '+t+'>'+big+'</div>';
+  if(progId&&progId.indexOf('prog')===0){var v=parseInt(progId.slice(4),10)||0;h+='<div class="prog" style="margin-top:9px"><span style="width:'+v+'%"></span></div>';}
+  h+='<div class="meta">'+meta+'</div></div>';return h;
+}
+function alertRow(x,d){
+  var lab=d<0?(-d)+'d overdue':d===0?'due today':'in '+d+'d';
+  var cls=d<0?'over':'soon';
+  return '<div class="drow"><span class="avatar">'+esc(initials(x.sub.owner))+'</span>'+
+    '<div class="grow"><div>'+esc(x.sub.title||'(untitled)')+'</div>'+
+    '<div class="rname">'+esc(ROCK_LABELS[x.type].replace(' Rocks',''))+' · '+esc(x.rock.title||'')+(x.sub.portco?' · '+esc(x.sub.portco):'')+'</div></div>'+
+    '<span class="tag '+cls+'">'+lab+'</span></div>';
+}
+function drawOverviewCharts(){
+  var col=chartColors();
+  // category stacked
+  var labels=ROCK_TYPES.map(function(t){return ROCK_LABELS[t].replace(' Rocks','');});
+  var done=[],prog=[],rest=[];
+  ROCK_TYPES.forEach(function(t){
+    var s=allSubs().filter(function(x){return x.type===t;});
+    done.push(s.filter(function(x){return subStatus(x.sub)==='Done';}).length);
+    prog.push(s.filter(function(x){return subStatus(x.sub)==='On Track'||subStatus(x.sub)==='At Risk';}).length);
+    rest.push(s.filter(function(x){return subStatus(x.sub)==='Not Started';}).length);
+  });
+  makeChart('ov-cat',{type:'bar',data:{labels:labels,datasets:[
+    {label:'Done',data:done,backgroundColor:col.green,borderRadius:4},
+    {label:'In progress',data:prog,backgroundColor:col.blue,borderRadius:4},
+    {label:'Not started',data:rest,backgroundColor:col.grey,borderRadius:4}
+  ]},options:{responsive:true,maintainAspectRatio:false,scales:{x:{stacked:true,grid:{display:false},ticks:{color:col.tx}},y:{stacked:true,grid:{color:col.grid},ticks:{color:col.tx,precision:0}}},plugins:{legend:{position:'bottom',labels:{color:col.tx,boxWidth:10,font:{size:11}}}}}});
+
+  var c=statusCounts(allRocks().map(function(x){return x.rock;}));
+  makeChart('ov-status',{type:'doughnut',data:{labels:['On Track','At Risk','Not Started','Done','Unplanned'],datasets:[{data:[c['On Track'],c['At Risk'],c['Not Started'],c.Done,c.Unplanned],backgroundColor:[col.green,col.amber,col.grey,col.blue,col.red],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'right',labels:{color:col.tx,boxWidth:10,font:{size:11}}}}}});
+
+  if(D.ns.length){
+    var wk=weekDates().map(fmtWeek);
+    var ds=D.ns.slice(0,5).map(function(m,i){
+      var pal=[col.blue,col.green,col.purple,col.teal,col.amber];var cum=0;
+      var data=(m.weeks||[]).map(function(v){cum+=parseFloat(v)||0;return cum;});
+      return {label:m.metric||'Metric '+(i+1),data:data,borderColor:pal[i%5],backgroundColor:'transparent',tension:.3,pointRadius:2};
+    });
+    makeChart('ov-ns',{type:'line',data:{labels:wk,datasets:ds},options:{responsive:true,maintainAspectRatio:false,scales:{x:{grid:{display:false},ticks:{color:col.tx,font:{size:10}}},y:{grid:{color:col.grid},ticks:{color:col.tx}}},plugins:{legend:{position:'bottom',labels:{color:col.tx,boxWidth:10,font:{size:10}}}}}});
+  }
+}
+
+/* ============================================================
+   NORTH STAR
+   ============================================================ */
+function renderNorthStar(){
+  var p=$('#panel-northstar');var wk=weekDates();
+  if(!D.ns.length){p.innerHTML=emptyState('northstar','No metrics yet','Add leading and lagging indicators to track weekly.');return;}
+  var h='<div class="card tablecard"><table class="tbl"><thead><tr>';
+  h+='<th style="width:90px">Type</th><th style="min-width:200px">Metric</th><th>Owner</th><th class="num">Target</th>';
+  wk.forEach(function(d){h+='<th class="num">'+fmtWeek(d)+'</th>';});
+  h+='<th class="num">Total</th><th class="num">vs Tgt</th><th></th></tr></thead><tbody>';
+  D.ns.forEach(function(m,i){
+    var tot=(m.weeks||[]).reduce(function(a,v){return a+(parseFloat(v)||0);},0);
+    var tgt=parseFloat(m.target)||0;var vs=tgt?Math.round(tot/tgt*100):0;
+    var vsCol=vs>=100?'var(--green)':vs>=70?'var(--amber)':'var(--red)';
+    var typeCls=m.type==='LEADING'?'p-lead':'p-lag';
+    h+='<tr><td><select onchange="nsSet('+i+',\'type\',this.value)" style="font-weight:600"><option'+(m.type==='LEADING'?' selected':'')+'>LEADING</option><option'+(m.type==='LAGGING'?' selected':'')+'>LAGGING</option></select></td>';
+    h+='<td><span class="ce" contenteditable onblur="nsSet('+i+',\'metric\',this.textContent)">'+esc(m.metric)+'</span></td>';
+    h+='<td><span class="ce" contenteditable onblur="nsSet('+i+',\'owner\',this.textContent)">'+esc(m.owner)+'</span></td>';
+    h+='<td><input class="num" value="'+esc(m.target)+'" onchange="nsSet('+i+',\'target\',this.value)" style="width:60px"></td>';
+    (m.weeks||[]).forEach(function(v,wi){h+='<td><input class="num" value="'+esc(v)+'" onchange="nsWeek('+i+','+wi+',this.value)" style="width:46px"></td>';});
+    h+='<td class="num" style="font-weight:600">'+(tot||'')+'</td>';
+    h+='<td class="num" style="font-weight:600;color:'+vsCol+'">'+(tgt?vs+'%':'—')+'</td>';
+    h+='<td><button class="btn-del" onclick="nsDel('+i+')">✕</button></td></tr>';
+  });
+  h+='</tbody></table></div>';
+  p.innerHTML=h;
+}
+function nsSet(i,k,v){D.ns[i][k]=v.trim?v.trim():v;save();if(k==='target')renderNorthStar();}
+function nsWeek(i,wi,v){D.ns[i].weeks[wi]=v;save();renderNorthStar();}
+function nsDel(i){D.ns.splice(i,1);save();renderNorthStar();updateBadges();}
+function addNSRow(){D.ns.push({type:'LAGGING',metric:'New metric',owner:'',target:'',weeks:['','','','','','','','','','','',''],status:'On Track'});save();if(CUR!=='northstar')switchTab('northstar');else renderNorthStar();updateBadges();}
+
+/* ============================================================
+   ROCK PANELS (category + all)
+   ============================================================ */
+function statRow(counts,tabKey){
+  var defs=[['Unplanned','--red'],['Not Started','--bdr2'],['On Track','--green'],['At Risk','--amber'],['Done','--blue']];
+  var active=D.activeFilter[tabKey];
+  return '<div class="stats">'+defs.map(function(d){
+    var on=active===d[0];
+    return '<div class="stat'+(on?' on':'')+'" onclick="toggleFilter(\''+tabKey+'\',\''+d[0]+'\')"><div class="n">'+(counts[d[0]]||0)+'</div><div class="l"><span class="sw" style="background:var('+d[1]+')"></span>'+d[0]+'</div></div>';
+  }).join('')+'</div>';
+}
+function toggleFilter(tabKey,status){D.activeFilter[tabKey]=D.activeFilter[tabKey]===status?null:status;save();render(CUR);}
+function renderRockPanel(type){
+  var p=$('#panel-'+type);var rocks=getRocks(type);
+  var counts=statusCounts(rocks);
+  var h=statRow(counts,type);
+  h+='<div class="addform" id="addform-'+type+'"></div>';
+  var flt=D.activeFilter[type];
+  var shown=rocks.map(function(r,i){return {r:r,i:i};});
+  if(flt)shown=shown.filter(function(o){return rockStatus(o.r)===flt;});
+  shown.sort(function(a,b){return SORTORD[rockStatus(a.r)]-SORTORD[rockStatus(b.r)]||((parseFloat(b.r.score)||0)-(parseFloat(a.r.score)||0));});
+  if(!rocks.length)h+=emptyState('rocks','No rocks yet','Click “Add Rock” to create your first one for this quarter.');
+  else if(!shown.length)h+='<div class="empty">No rocks match this filter.</div>';
+  else h+='<div class="rocklist">'+shown.map(function(o){return rockCard(type,o.r,o.i);}).join('')+'</div>';
+  p.innerHTML=h;
+}
+function renderAllRocks(){
+  var p=$('#panel-allrocks');
+  var rocks=allRocks();var counts=statusCounts(rocks.map(function(x){return x.rock;}));
+  var h=statRow(counts,'allrocks');
+  var flt=D.activeFilter.allrocks;
+  ROCK_TYPES.forEach(function(t){
+    var rs=getRocks(t).map(function(r,i){return {r:r,i:i};});
+    if(flt)rs=rs.filter(function(o){return rockStatus(o.r)===flt;});
+    if(!rs.length)return;
+    rs.sort(function(a,b){return SORTORD[rockStatus(a.r)]-SORTORD[rockStatus(b.r)]||((parseFloat(b.r.score)||0)-(parseFloat(a.r.score)||0));});
+    h+='<div class="sec-head"><h2>'+ROCK_LABELS[t]+'</h2><span class="sub">'+rs.length+'</span></div>';
+    h+='<div class="rocklist">'+rs.map(function(o){return rockCard(t,o.r,o.i,true);}).join('')+'</div>';
+  });
+  if(!rocks.length)h+=emptyState('rocks','No rocks yet','Add rocks under each category to see them here.');
+  p.innerHTML=h;
+}
+function rockCard(type,rock,idx,readonly){
+  var st=rockStatus(rock);var pct=rockPct(rock);var key=type+'-'+rock.id;
+  var open=!readonly&&D.expanded[key];
+  var unp=st==='Unplanned';
+  var h='<div class="rock'+(open?' open':'')+(unp?' unp':'')+'" data-key="'+key+'">';
+  h+='<div class="rock-hd" onclick="toggleRock(\''+key+'\',event)">';
+  if(!readonly)h+='<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>';
+  h+='<span class="avatar">'+esc(initials(rock.owner))+'</span>';
+  h+='<span class="ttl" '+(readonly?'':'contenteditable onblur="rockSet(\''+type+'\',\''+rock.id+'\',\'title\',this.textContent)"')+' onclick="event.stopPropagation()">'+esc(rock.title||'Untitled rock')+'</span>';
+  h+='<span class="owner">'+(rock.owner?esc(rock.owner):'<span style="color:var(--tx3)">unassigned</span>')+'</span>';
+  h+='<span class="spacer"></span>';
+  h+=chip(st);
+  h+='<div class="progwrap"><div class="prog"><span style="width:'+pct+'%"></span></div></div><span class="pct">'+pct+'%</span>';
+  if(rock.score)h+='<span class="score" title="Q Score (set at quarter end)">'+esc(rock.score)+'</span>';
+  if(!readonly)h+='<button class="btn-del" onclick="delRock(\''+type+'\',\''+rock.id+'\',event)" title="Delete rock">✕</button>';
+  h+='</div>';
+  if(!readonly){
+    h+='<div class="rock-bd">';
+    var tab=D.srTab[key]||'subs';
+    h+='<div class="subtabs"><button class="'+(tab==='subs'?'on':'')+'" onclick="srTab(\''+key+'\',\'subs\')">Sub-Rocks</button><button class="'+(tab==='ms'?'on':'')+'" onclick="srTab(\''+key+'\',\'ms\')">Week-by-Week</button></div>';
+    h+='<div class="subpane'+(tab==='subs'?' on':'')+'">'+subrocksTab(type,rock)+'</div>';
+    h+='<div class="subpane'+(tab==='ms'?' on':'')+'">'+milestonesTab(type,rock)+'</div>';
+    h+='</div>';
+  }
+  h+='</div>';
+  return h;
+}
+function toggleRock(key,e){if(e&&e.target.closest('.btn-del,.ttl'))return;D.expanded[key]=!D.expanded[key];save();rerenderCurrent();}
+function srTab(key,t){D.srTab[key]=t;save();rerenderCurrent();}
+function rockSet(type,id,k,v){var r=getRocks(type).find(function(x){return x.id===id;});if(r){r[k]=v.trim?v.trim():v;save();}}
+
+/* ---- Sub-Rocks tab ---- */
+function portcoOpts(v){return '<option value=""'+(!v?' selected':'')+'>—</option>'+PORTCOS.map(function(p){return '<option'+(v===p?' selected':'')+'>'+esc(p)+'</option>';}).join('');}
+function statusOpts(v){return STATUSES.map(function(s){return '<option'+(v===s?' selected':'')+'>'+esc(s)+'</option>';}).join('');}
+function subrocksTab(type,rock){
+  var subs=rock.subrocks||[];
+  var h='<div class="tablecard"><table class="tbl"><thead><tr><th style="width:24px">#</th><th style="min-width:180px">Sub-Rock</th><th>Owner</th><th>PortCo</th><th>Target</th><th>Done</th><th>Status</th><th></th></tr></thead><tbody>';
+  subs.forEach(function(s,si){
+    var noTgt=!s.targetDate;
+    h+='<tr'+(noTgt?' style="background:var(--red-bg)"':'')+'><td class="num" style="color:var(--tx3)">'+(si+1)+'</td>';
+    h+='<td><span class="ce" contenteditable onblur="subSet(\''+type+'\',\''+rock.id+'\',\''+s.id+'\',\'title\',this.textContent)">'+esc(s.title)+'</span></td>';
+    h+='<td><span class="ce" contenteditable onblur="subSet(\''+type+'\',\''+rock.id+'\',\''+s.id+'\',\'owner\',this.textContent)">'+esc(s.owner)+'</span></td>';
+    h+='<td><select onchange="subSet(\''+type+'\',\''+rock.id+'\',\''+s.id+'\',\'portco\',this.value)">'+portcoOpts(s.portco)+'</select></td>';
+    h+='<td><input type="date" value="'+esc(s.targetDate)+'" onchange="subSet(\''+type+'\',\''+rock.id+'\',\''+s.id+'\',\'targetDate\',this.value)"></td>';
+    h+='<td><input type="date" value="'+esc(s.doneDate)+'" onchange="subDone(\''+type+'\',\''+rock.id+'\',\''+s.id+'\',this.value)"></td>';
+    h+='<td><select onchange="subSet(\''+type+'\',\''+rock.id+'\',\''+s.id+'\',\'status\',this.value)">'+statusOpts(subStatus(s))+'</select></td>';
+    h+='<td><button class="btn-del" onclick="delSub(\''+type+'\',\''+rock.id+'\',\''+s.id+'\')">✕</button></td></tr>';
+  });
+  h+='</tbody></table></div>';
+  h+='<div style="display:flex;gap:8px;margin-top:10px"><input id="newsub-'+rock.id+'" placeholder="New sub-rock title…" style="flex:1;background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r);padding:8px 10px" onkeydown="if(event.key===\'Enter\')addSub(\''+type+'\',\''+rock.id+'\')"><button class="btn sm" onclick="addSub(\''+type+'\',\''+rock.id+'\')">Add sub-rock</button></div>';
+  h+='<div class="hint" style="margin-top:10px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>Setting a Done date auto-marks the sub-rock complete. Sub-rocks with no target date are flagged Unplanned.</div>';
+  return h;
+}
+function addSub(type,rid){
+  var inp=$('#newsub-'+rid);var t=inp?inp.value.trim():'';if(!t)return;
+  var r=getRocks(type).find(function(x){return x.id===rid;});
+  r.subrocks=r.subrocks||[];
+  r.subrocks.push({id:uid(),title:t,kr:'',owner:'',dept:'',portco:'',score:'',targetDate:'',doneDate:'',status:'Not Started',milestones:Array(12).fill(''),msNotes:Array(12).fill('')});
+  save();rerenderCurrent();
+}
+function findSub(type,rid,sid){var r=getRocks(type).find(function(x){return x.id===rid;});if(!r)return null;return (r.subrocks||[]).find(function(s){return s.id===sid;});}
+function subSet(type,rid,sid,k,v){var s=findSub(type,rid,sid);if(!s)return;s[k]=v.trim?v.trim():v;save();rerenderCurrent();}
+function subDone(type,rid,sid,v){var s=findSub(type,rid,sid);if(!s)return;s.doneDate=v;if(v)s.status='Done';else if(s.status==='Done')s.status='On Track';save();rerenderCurrent();}
+function delSub(type,rid,sid){var r=getRocks(type).find(function(x){return x.id===rid;});r.subrocks=r.subrocks.filter(function(s){return s.id!==sid;});save();rerenderCurrent();}
+
+/* ---- Week-by-Week milestones grid ---- */
+function milestonesTab(type,rock){
+  var subs=rock.subrocks||[];var wk=weekDates();var now=today0();
+  var nowIdx=-1;wk.forEach(function(d,i){if(d<=now)nowIdx=i;});
+  if(!subs.length)return '<div class="empty">Add sub-rocks first to plan them week by week.</div>';
+  var h='<div class="msgrid"><table class="mstable"><thead><tr><th class="name">Sub-Rock</th>';
+  wk.forEach(function(d,i){h+='<th class="'+(i===nowIdx?'now':'')+'">'+fmtWeek(d)+'</th>';});
+  h+='</tr></thead><tbody>';
+  subs.forEach(function(s){
+    var tgtIdx=-1,doneIdx=-1;
+    wk.forEach(function(d,i){
+      if(s.targetDate){var t=new Date(s.targetDate+'T00:00:00');if(t<=d&&tgtIdx<0)tgtIdx=i;}
+      if(s.doneDate){var dn=new Date(s.doneDate+'T00:00:00');if(dn<=d&&doneIdx<0)doneIdx=i;}
+    });
+    h+='<tr><td class="name" title="'+esc(s.title)+'">'+esc(s.title)+'</td>';
+    wk.forEach(function(d,i){
+      var cls='dot';
+      if(doneIdx>=0&&i===doneIdx)cls+=' done';
+      else if(doneIdx>=0&&i<doneIdx)cls+=' pre';
+      else if(tgtIdx>=0&&i===tgtIdx)cls+=' tgt';
+      if(i===nowIdx)cls+=' nowcol';
+      h+='<td><span class="'+cls+'" title="Click: mark done this week · Shift/right-click: set target" onclick="msClick(\''+type+'\',\''+rock.id+'\',\''+s.id+'\','+i+',event)" oncontextmenu="msTarget(\''+type+'\',\''+rock.id+'\',\''+s.id+'\','+i+',event)"></span></td>';
+    });
+    h+='</tr>';
+  });
+  h+='</tbody></table></div>';
+  h+='<div class="hint" style="margin-top:12px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>Green = completed week · dashed red = target deadline · highlighted column = current week. Click a dot to mark done, shift- or right-click to set the target.</div>';
+  return h;
+}
+function isoOf(i){var d=weekDates()[i];return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
+function msClick(type,rid,sid,i,e){if(e&&e.shiftKey){return msTarget(type,rid,sid,i,e);}var s=findSub(type,rid,sid);if(!s)return;var iso=isoOf(i);if(s.doneDate===iso){s.doneDate='';if(s.status==='Done')s.status='On Track';}else{s.doneDate=iso;s.status='Done';}save();rerenderCurrent();}
+function msTarget(type,rid,sid,i,e){if(e)e.preventDefault();var s=findSub(type,rid,sid);if(!s)return;s.targetDate=isoOf(i);save();rerenderCurrent();return false;}
+
+/* ---- Add Rock form ---- */
+function showAddRock(type){
+  if(CUR!==type)switchTab(type);
+  var f=$('#addform-'+type);if(!f)return;
+  f.classList.add('on');
+  f.innerHTML='<div class="row"><div><label>Rock title</label><input id="ar-title-'+type+'" placeholder="What\'s the big quarterly goal?"></div><div><label>Owner</label><input id="ar-owner-'+type+'" placeholder="Who owns it?"></div></div><div class="acts"><button class="btn" onclick="hideAddRock(\''+type+'\')">Cancel</button><button class="btn pri" onclick="addRock(\''+type+'\')">Add Rock</button></div>';
+  setTimeout(function(){var t=$('#ar-title-'+type);if(t)t.focus();},30);
+}
+function hideAddRock(type){var f=$('#addform-'+type);if(f){f.classList.remove('on');f.innerHTML='';}}
+function addRock(type){
+  var t=$('#ar-title-'+type),o=$('#ar-owner-'+type);
+  var title=t?t.value.trim():'';if(!title){if(t)t.focus();return;}
+  D[ROCK_ARR[type]].push({id:uid(),title:title,dim:'',owner:o?o.value.trim():'',dept:'',score:'',subrocks:[]});
+  save();hideAddRock(type);render(type);updateBadges();
+}
+function delRock(type,id,e){
+  if(e)e.stopPropagation();
+  var r=getRocks(type).find(function(x){return x.id===id;});
+  confirmDelete('Delete Rock?','This will permanently delete “'+(r?r.title:'this rock')+'” and all its sub-rocks. This cannot be undone.',function(){
+    D[ROCK_ARR[type]]=getRocks(type).filter(function(x){return x.id!==id;});
+    save();render(CUR);updateBadges();
+  });
+}
+
+/* ============================================================
+   DASHBOARD — By Individual
+   ============================================================ */
+function renderDashInd(){
+  var p=$('#panel-dash-ind');
+  var subs=allSubs();
+  var people={};
+  subs.forEach(function(x){var o=(x.sub.owner||'').trim()||'Unassigned';(people[o]=people[o]||[]).push(x);});
+  // include rock owners with no sub-owner? keep to sub owners (workload lives in subs)
+  var names=Object.keys(people).sort(function(a,b){return people[b].length-people[a].length;});
+  var sel=getDashFilter('ind');
+  var h='<div class="filt"><span class="lbl">Filter:</span><select id="filt-ind" onchange="setDashFilter(\'ind\',this.value)"><option value="">All individuals</option>'+
+    names.map(function(n){return '<option'+(sel===n?' selected':'')+'>'+esc(n)+'</option>';}).join('')+'</select></div>';
+  if(!names.length){h+=emptyState('user','No owners yet','Assign owners to sub-rocks to see workload here.');p.innerHTML=h;return;}
+  names.filter(function(n){return !sel||sel===n;}).forEach(function(n){
+    var items=people[n];var done=items.filter(function(x){return subStatus(x.sub)==='Done';}).length;
+    var pct=Math.round(done/items.length*100);
+    var atRisk=items.filter(function(x){return subStatus(x.sub)==='At Risk';}).length;
+    var key='ind-'+n;var open=D.indCollapsed[key]!==true;
+    h+='<div class="dgrp'+(open?' open':'')+'"><div class="dgrp-hd" onclick="toggleGrp(\'ind\',\''+esc(n).replace(/'/g,"\\'")+'\')"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>';
+    h+='<span class="avatar">'+esc(initials(n))+'</span><span class="nm">'+esc(n)+'</span>';
+    h+='<span class="ct">'+items.length+' sub-rocks · '+pct+'% done'+(atRisk?' · '+atRisk+' at risk':'')+'</span><span class="spacer"></span>';
+    h+='<div style="width:120px"><div class="prog"><span style="width:'+pct+'%"></span></div></div></div>';
+    h+='<div class="dgrp-bd"><div class="card" style="padding:4px 0">';
+    items.sort(function(a,b){return SORTORD[subStatus(a.sub)]-SORTORD[subStatus(b.sub)];}).forEach(function(x){
+      var d=daysUntil(x.sub.targetDate);var tag='';
+      if(subStatus(x.sub)!=='Done'&&d!==null){if(d<0)tag='<span class="tag over">'+(-d)+'d over</span>';else if(d<=14)tag='<span class="tag soon">in '+d+'d</span>';}
+      h+='<div class="drow"><div class="grow"><div>'+esc(x.sub.title||'(untitled)')+'</div><div class="rname">'+esc(ROCK_LABELS[x.type].replace(' Rocks',''))+' · '+esc(x.rock.title||'')+(x.sub.portco?' · '+esc(x.sub.portco):'')+'</div></div>'+tag+chip(subStatus(x.sub))+'</div>';
+    });
+    h+='</div></div></div>';
+  });
+  p.innerHTML=h;
+}
+
+/* ============================================================
+   DASHBOARD — By PortCo
+   ============================================================ */
+function renderDashPortco(){
+  var p=$('#panel-dash-portco');
+  var subs=allSubs().filter(function(x){return (x.sub.portco||'').trim();});
+  var groups={};
+  subs.forEach(function(x){(groups[x.sub.portco]=groups[x.sub.portco]||[]).push(x);});
+  var order=PORTCOS.filter(function(pc){return groups[pc];});
+  Object.keys(groups).forEach(function(g){if(order.indexOf(g)<0)order.push(g);});
+  var sel=getDashFilter('portco');
+  var h='<div class="filt"><span class="lbl">Filter:</span><select id="filt-portco" onchange="setDashFilter(\'portco\',this.value)"><option value="">All PortCos</option>'+
+    order.map(function(n){return '<option'+(sel===n?' selected':'')+'>'+esc(n)+'</option>';}).join('')+'</select></div>';
+  if(!order.length){h+=emptyState('grid','No PortCo sub-rocks yet','Assign a PortCo to sub-rocks to see them grouped here.');p.innerHTML=h;return;}
+  order.filter(function(n){return !sel||sel===n;}).forEach(function(pc){
+    var items=groups[pc];var done=items.filter(function(x){return subStatus(x.sub)==='Done';}).length;
+    var pct=Math.round(done/items.length*100);
+    var c={'On Track':0,'At Risk':0,'Not Started':0,'Done':0};items.forEach(function(x){c[subStatus(x.sub)]++;});
+    var key='portco-'+pc;var open=D.portcoCollapsed[key]!==true;
+    h+='<div class="dgrp'+(open?' open':'')+'"><div class="dgrp-hd" onclick="toggleGrp(\'portco\',\''+esc(pc).replace(/'/g,"\\'")+'\')" style="background:var(--teal-bg);border-color:var(--teal)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>';
+    h+='<span class="nm" style="color:var(--teal-tx)">'+esc(pc)+'</span><span class="ct">'+items.length+' sub-rocks · '+pct+'% done</span><span class="spacer"></span>';
+    h+='<div class="mini">'+(c['At Risk']?'<span class="pill p-ar">'+c['At Risk']+' risk</span>':'')+(c['On Track']?'<span class="pill p-ot">'+c['On Track']+'</span>':'')+(c.Done?'<span class="pill p-dn">'+c.Done+'</span>':'')+'</div></div>';
+    h+='<div class="dgrp-bd"><div class="card" style="padding:4px 0">';
+    items.sort(function(a,b){return SORTORD[subStatus(a.sub)]-SORTORD[subStatus(b.sub)];}).forEach(function(x){
+      h+='<div class="drow"><span class="avatar">'+esc(initials(x.sub.owner))+'</span><div class="grow"><div>'+esc(x.sub.title||'(untitled)')+'</div><div class="rname">'+esc(x.sub.owner||'unassigned')+' · '+esc(x.rock.title||'')+'</div></div>'+chip(subStatus(x.sub))+'</div>';
+    });
+    h+='</div></div></div>';
+  });
+  p.innerHTML=h;
+}
+var _dashFilter={};
+function getDashFilter(k){return _dashFilter[k]||'';}
+function setDashFilter(k,v){_dashFilter[k]=v;render(CUR);}
+function toggleGrp(kind,name){
+  var store=kind==='ind'?D.indCollapsed:D.portcoCollapsed;var key=kind+'-'+name;
+  store[key]=store[key]===true?false:true;save();render(CUR);
+}
+
+/* ============================================================
+   OPERATIONS LOGS — 1% Better / Blockers / Support
+   ============================================================ */
+function selOpts(arr,v){return arr.map(function(o){return '<option'+(v===o?' selected':'')+'>'+esc(o)+'</option>';}).join('');}
+function logPill(val,map){return '<span class="pill '+(map[val]||'p-ns')+'">'+esc(val)+'</span>';}
+
+function renderBetter(){
+  var p=$('#panel-better');
+  var h='<div class="sec-head"><h2>1% Better log</h2><span class="spacer"></span><button class="btn pri" onclick="toggleAdd(\'better\')">'+ic2('plus')+'Log idea</button></div>';
+  h+='<div class="addform" id="add-better"><div class="row"><div><label>Area</label><input id="b-area" placeholder="e.g. Onboarding"></div><div><label>By whom</label><input id="b-who"></div></div>'+
+    '<div class="row"><div><label>What can be done better</label><input id="b-what"></div></div>'+
+    '<div class="row"><div><label>Impact</label><input id="b-impact" placeholder="Expected outcome"></div><div><label>Level</label><select id="b-level">'+selOpts(BETTER_LEVELS,'Medium')+'</select></div><div><label>Status</label><select id="b-status">'+selOpts(BETTER_STATUS,'Suggested')+'</select></div></div>'+
+    '<div class="acts"><button class="btn" onclick="toggleAdd(\'better\')">Cancel</button><button class="btn pri" onclick="addBetter()">Save</button></div></div>';
+  if(!D.better.length){h+=emptyState('spark','No ideas yet','Every small improvement counts. Log the first one.');p.innerHTML=h;return;}
+  var lvlCls={Critical:'p-up',High:'p-ar',Medium:'p-lead',Low:'p-ns'};
+  var stCls={Suggested:'p-lead','In Progress':'p-ar',Implemented:'p-ot'};
+  h+='<div class="card tablecard"><table class="tbl"><thead><tr><th>Area</th><th>What</th><th>Impact</th><th>Level</th><th>By</th><th>Status</th><th></th></tr></thead><tbody>';
+  D.better.forEach(function(r,i){
+    h+='<tr><td>'+esc(r.area)+'</td><td>'+esc(r.what)+'</td><td>'+esc(r.impact)+'</td><td>'+logPill(r.level,lvlCls)+'</td><td>'+esc(r.who)+'</td>'+
+      '<td><select onchange="logSet(\'better\','+i+',\'status\',this.value)">'+selOpts(BETTER_STATUS,r.status)+'</select></td>'+
+      '<td><button class="btn-del" onclick="logDel(\'better\','+i+')">✕</button></td></tr>';
+  });
+  h+='</tbody></table></div>';p.innerHTML=h;
+}
+function addBetter(){
+  var v=function(id){return ($('#'+id)||{}).value||'';};
+  if(!v('b-area').trim()&&!v('b-what').trim())return;
+  D.better.push({area:v('b-area').trim(),who:v('b-who').trim(),what:v('b-what').trim(),impact:v('b-impact').trim(),level:v('b-level'),status:v('b-status')});
+  save();renderBetter();updateBadges();
+}
+
+function renderBlockers(){
+  var p=$('#panel-blockers');
+  var h='<div class="sec-head"><h2>Blockers</h2><span class="spacer"></span><button class="btn pri" onclick="toggleAdd(\'blockers\')">'+ic2('plus')+'Log blocker</button></div>';
+  h+='<div class="addform" id="add-blockers"><div class="row"><div><label>Blocked Rock</label><input id="bl-rock"></div><div><label>By whom</label><input id="bl-who"></div><div><label>Support from</label><input id="bl-from"></div></div>'+
+    '<div class="row"><div><label>Description</label><input id="bl-desc"></div><div><label>Support needed</label><input id="bl-support"></div></div>'+
+    '<div class="row"><div><label>Status</label><select id="bl-status">'+selOpts(BLOCK_STATUS,'Blocked')+'</select></div><div><label>Notes</label><input id="bl-notes"></div></div>'+
+    '<div class="acts"><button class="btn" onclick="toggleAdd(\'blockers\')">Cancel</button><button class="btn pri" onclick="addBlocker()">Save</button></div></div>';
+  if(!D.blockers.length){h+=emptyState('block','No blockers','Nothing is blocking a Rock right now.');p.innerHTML=h;return;}
+  var stCls={Blocked:'p-up','In Progress':'p-ar',Resolved:'p-ot'};
+  h+='<div class="card tablecard"><table class="tbl"><thead><tr><th>Rock</th><th>Description</th><th>Support needed</th><th>From</th><th>By</th><th>Status</th><th></th></tr></thead><tbody>';
+  D.blockers.forEach(function(r,i){
+    h+='<tr><td>'+esc(r.rock)+'</td><td>'+esc(r.desc)+'</td><td>'+esc(r.support)+'</td><td>'+esc(r.from)+'</td><td>'+esc(r.who)+'</td>'+
+      '<td><select onchange="logSet(\'blockers\','+i+',\'status\',this.value)">'+selOpts(BLOCK_STATUS,r.status)+'</select></td>'+
+      '<td><button class="btn-del" onclick="logDel(\'blockers\','+i+')">✕</button></td></tr>';
+  });
+  h+='</tbody></table></div>';p.innerHTML=h;
+}
+function addBlocker(){
+  var v=function(id){return ($('#'+id)||{}).value||'';};
+  if(!v('bl-rock').trim()&&!v('bl-desc').trim())return;
+  D.blockers.push({rock:v('bl-rock').trim(),who:v('bl-who').trim(),from:v('bl-from').trim(),desc:v('bl-desc').trim(),support:v('bl-support').trim(),status:v('bl-status'),notes:v('bl-notes').trim()});
+  save();renderBlockers();updateBadges();
+}
+
+function renderSupport(){
+  var p=$('#panel-support');
+  var h='<div class="sec-head"><h2>Support requests</h2><span class="spacer"></span><button class="btn pri" onclick="toggleAdd(\'support\')">'+ic2('plus')+'Log request</button></div>';
+  h+='<div class="addform" id="add-support"><div class="row"><div><label>Type</label><select id="sp-type">'+selOpts(SUP_TYPES,'Intro')+'</select></div><div><label>Initiative</label><input id="sp-init"></div></div>'+
+    '<div class="row"><div><label>Requested by</label><input id="sp-by"></div><div><label>Supported by</label><input id="sp-from"></div><div><label>Timeline</label><input id="sp-time" placeholder="e.g. 1 week"></div></div>'+
+    '<div class="row"><div><label>Description</label><input id="sp-desc"></div><div><label>Status</label><select id="sp-status">'+selOpts(SUP_STATUS,'Needed')+'</select></div></div>'+
+    '<div class="acts"><button class="btn" onclick="toggleAdd(\'support\')">Cancel</button><button class="btn pri" onclick="addSupport()">Save</button></div></div>';
+  if(!D.support.length){h+=emptyState('hand','No requests','What does the team need from leadership?');p.innerHTML=h;return;}
+  h+='<div class="card tablecard"><table class="tbl"><thead><tr><th>Type</th><th>Initiative</th><th>Description</th><th>From</th><th>By</th><th>Timeline</th><th>Status</th><th></th></tr></thead><tbody>';
+  D.support.forEach(function(r,i){
+    h+='<tr><td><span class="tag">'+esc(r.type)+'</span></td><td>'+esc(r.init)+'</td><td>'+esc(r.desc)+'</td><td>'+esc(r.from)+'</td><td>'+esc(r.by)+'</td><td>'+esc(r.time)+'</td>'+
+      '<td><select onchange="logSet(\'support\','+i+',\'status\',this.value)">'+selOpts(SUP_STATUS,r.status)+'</select></td>'+
+      '<td><button class="btn-del" onclick="logDel(\'support\','+i+')">✕</button></td></tr>';
+  });
+  h+='</tbody></table></div>';p.innerHTML=h;
+}
+function addSupport(){
+  var v=function(id){return ($('#'+id)||{}).value||'';};
+  if(!v('sp-init').trim()&&!v('sp-desc').trim())return;
+  D.support.push({type:v('sp-type'),init:v('sp-init').trim(),by:v('sp-by').trim(),from:v('sp-from').trim(),desc:v('sp-desc').trim(),time:v('sp-time').trim(),status:v('sp-status')});
+  save();renderSupport();updateBadges();
+}
+function toggleAdd(which){var f=$('#add-'+which);if(f)f.classList.toggle('on');}
+function logSet(which,i,k,v){D[which][i][k]=v;save();updateBadges();}
+function logDel(which,i){D[which].splice(i,1);save();render(which);updateBadges();}
+
+/* ============================================================
+   Shared UI helpers
+   ============================================================ */
+function emptyState(icon,title,sub){
+  return '<div class="card"><div class="empty">'+ic(icon)+'<div style="font-weight:600;color:var(--tx2);font-size:14px;margin-bottom:3px">'+esc(title)+'</div><div>'+esc(sub)+'</div></div></div>';
+}
+
+/* ---- Search ---- */
+function doSearch(q){
+  q=q.trim().toLowerCase();
+  if(!q){switchTab(CUR==='__search'?'overview':CUR);return;}
+  var hits=[];
+  allRocks().forEach(function(x){
+    var r=x.rock;
+    if((r.title||'').toLowerCase().indexOf(q)>=0||(r.owner||'').toLowerCase().indexOf(q)>=0)hits.push({kind:'Rock',type:x.type,title:r.title,meta:ROCK_LABELS[x.type]+' · '+(r.owner||'unassigned'),go:x.type});
+    (r.subrocks||[]).forEach(function(s){
+      if((s.title||'').toLowerCase().indexOf(q)>=0||(s.owner||'').toLowerCase().indexOf(q)>=0||(s.portco||'').toLowerCase().indexOf(q)>=0)
+        hits.push({kind:'Sub-Rock',type:x.type,title:s.title,meta:r.title+' · '+(s.owner||'')+(s.portco?' · '+s.portco:''),go:x.type});
+    });
+  });
+  var p=$('#panel-overview');
+  $('#pg-title').textContent='Search';$('#pg-sub').textContent=hits.length+' result'+(hits.length===1?'':'s')+' for “'+q+'”';
+  $all('.panel').forEach(function(x){x.classList.remove('active');});p.classList.add('active');
+  $all('#nav a').forEach(function(a){a.classList.remove('on');});
+  CUR='__search';
+  if(!hits.length){p.innerHTML=emptyState('rocks','No matches','Try a different rock title, owner, or PortCo.');return;}
+  p.innerHTML='<div class="card" style="padding:6px 0">'+hits.map(function(hh){
+    return '<div class="drow" style="cursor:pointer" onclick="switchTab(\''+hh.go+'\')"><span class="tag">'+hh.kind+'</span><div class="grow"><div>'+esc(hh.title||'(untitled)')+'</div><div class="rname">'+esc(hh.meta)+'</div></div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--tx3)" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg></div>';
+  }).join('')+'</div>';
+}
+
+/* ---- Export ---- */
+function exportData(){
+  var blob=new Blob([JSON.stringify(D,null,2)],{type:'application/json'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='downing-rocks-'+(D.quarter||'').replace(/\s+/g,'-')+'-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+}
+
+/* ---- Modals / settings / theme ---- */
+function openModal(id){$('#'+id).classList.add('on');}
+function closeModal(id){$('#'+id).classList.remove('on');}
+function openSettings(){$('#set-q').value=D.quarter||'';$('#set-start').value=D.qStart||'';openModal('modal-settings');}
+function saveSettings(){
+  D.quarter=$('#set-q').value.trim()||D.quarter;
+  D.qStart=$('#set-start').value||D.qStart;
+  $('#sb-quarter').textContent=D.quarter;
+  save();closeModal('modal-settings');render(CUR);
+}
+var _cfCb=null;
+function confirmDelete(title,msg,cb){$('#cf-title').textContent=title;$('#cf-msg').textContent=msg;_cfCb=cb;openModal('modal-confirm');}
+function setTheme(t){document.documentElement.setAttribute('data-theme',t);try{localStorage.setItem('dc_theme',t);}catch(e){}
+  var ico=$('#theme-ico');if(ico)ico.innerHTML=t==='dark'?'<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>':'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>';
+  if(_booted&&(CUR==='overview'||CUR==='__search'))setTimeout(drawOverviewCharts,40);
+}
+function toggleSidebar(force){var sb=$('#sidebar'),sc=$('#scrim');var on=force!==undefined?force:!sb.classList.contains('open');sb.classList.toggle('open',on);sc.classList.toggle('on',on);}
+
+/* ============================================================
+   Seed data (first run only)
+   ============================================================ */
+function seed(){
+  D.quarter='Q2 2026';D.qStart='2026-04-03';
+  D.ns=[
+    {type:'LEADING',metric:'Qualified leads / week',owner:'Renata',target:'120',weeks:['8','10','9','12','11','13','10','12','','','',''],status:'On Track'},
+    {type:'LAGGING',metric:'New revenue closed ($K)',owner:'Renata',target:'500',weeks:['20','35','40','55','60','45','70','','','','',''],status:'On Track'},
+    {type:'LAGGING',metric:'Portfolio NPS',owner:'Ops',target:'60',weeks:['52','','','58','','','61','','','','',''],status:'At Risk'}
+  ];
+  function sr(title,owner,portco,tgt,done,status){return {id:uid(),title:title,kr:'',owner:owner,dept:'',portco:portco||'',score:'',targetDate:tgt||'',doneDate:done||'',status:status||'Not Started',milestones:Array(12).fill(''),msNotes:Array(12).fill('')};}
+  D.buildRocks=[
+    {id:uid(),title:'Ship Wellnest v2 onboarding',dim:'',owner:'Dana',dept:'',score:'0.8',subrocks:[
+      sr('New signup flow live','Dana','Wellnest','2026-05-08','2026-05-06','Done'),
+      sr('Activation email sequence','Dana','Wellnest','2026-05-22','','On Track'),
+      sr('Mobile parity','Priya','Wellnest','2026-06-12','','At Risk')
+    ]},
+    {id:uid(),title:'Portoro payments integration',dim:'',owner:'Marco',dept:'',score:'',subrocks:[
+      sr('Stripe connect setup','Marco','Portoro','2026-04-24','2026-04-22','Done'),
+      sr('Payout reconciliation','Marco','Portoro','2026-05-29','','On Track')
+    ]}
+  ];
+  D.talentRocks=[
+    {id:uid(),title:'Hire 2 founding engineers',dim:'',owner:'Renata',dept:'',score:'',subrocks:[
+      sr('Define roles + comp bands','Renata','','2026-04-17','2026-04-15','Done'),
+      sr('Close first hire','Renata','','2026-05-15','','At Risk'),
+      sr('Close second hire','Renata','','2026-06-12','','Not Started')
+    ]}
+  ];
+  D.ideationRocks=[
+    {id:uid(),title:'Validate Calibright wedge',dim:'',owner:'Sam',dept:'',score:'',subrocks:[
+      sr('15 customer interviews','Sam','Calibright','2026-05-01','2026-04-30','Done'),
+      sr('Pricing experiment','Sam','Calibright','2026-05-29','','On Track')
+    ]}
+  ];
+  D.opsRocks=[
+    {id:uid(),title:'Standardize portfolio reporting',dim:'',owner:'Ops',dept:'',score:'',subrocks:[
+      sr('Monthly KPI template','Ops','','2026-04-30','2026-04-28','Done'),
+      sr('Roll out to all PortCos','Ops','Bloomwell','2026-06-05','','On Track')
+    ]}
+  ];
+  D.ceoRocks=[
+    {id:uid(),title:'Close Fund II first tranche',dim:'',owner:'Renata',dept:'',score:'',subrocks:[]}
+  ];
+  D.better=[
+    {area:'Onboarding',who:'Dana',what:'Pre-fill demo data for new PortCo accounts',impact:'Faster time-to-value',level:'High',status:'Suggested'},
+    {area:'Reporting',who:'Ops',what:'Automate weekly metric pull',impact:'Save ~3 hrs/week',level:'Medium',status:'In Progress'}
+  ];
+  D.blockers=[
+    {rock:'Wellnest v2 onboarding',who:'Priya',from:'Renata',desc:'Need design review bandwidth',support:'2 hrs design review',status:'Blocked',notes:''}
+  ];
+  D.support=[
+    {type:'Intro',init:'Fund II raise',by:'Renata',from:'Board',desc:'Warm intros to 3 LPs',time:'2 weeks',status:'Needed'}
+  ];
+}
+
+/* ============================================================
+   Boot
+   ============================================================ */
+function boot(){
+  buildNav();buildPanels();
+  // theme
+  var th='light';try{th=localStorage.getItem('dc_theme')||'light';}catch(e){}
+  setTheme(th);
+  // events
+  $('#theme-btn').onclick=function(){setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');};
+  $('#export-btn').onclick=exportData;
+  $('#settings-btn').onclick=openSettings;
+  $('#menu-btn').onclick=function(){toggleSidebar();};
+  $('#scrim').onclick=function(){toggleSidebar(false);};
+  $('#cf-ok').onclick=function(){if(_cfCb)_cfCb();_cfCb=null;closeModal('modal-confirm');};
+  var st;$('#search').oninput=function(){clearTimeout(st);var v=this.value;st=setTimeout(function(){doSearch(v);},180);};
+  document.addEventListener('keydown',function(e){if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();$('#search').focus();}if(e.key==='Escape'){$('#search').value='';if(CUR==='__search')switchTab('overview');closeModal('modal-settings');closeModal('modal-confirm');}});
+
+  // load local cache first
+  var local=null;
+  try{var raw=localStorage.getItem(STORE);if(raw)local=JSON.parse(raw);}catch(e){}
+  if(local)applyData(local);
+  var hadLocal=!!(local&&(allRocks().length||D.ns.length||D.better.length||D.blockers.length||D.support.length));
+  _booted=true;
+  $('#sb-quarter').textContent=D.quarter||'Q2 2026';
+  switchTab('overview');
+
+  // remote (source of truth). Never seed/overwrite on a network error.
+  setSync('load','Syncing…');
+  loadSupabase().then(function(res){
+    var r=res.data;
+    var hasRemote=r&&(r.ideationRocks||r.talentRocks||r.buildRocks||r.opsRocks||r.ceoRocks||(r.ns&&r.ns.length)||(r.better&&r.better.length));
+    if(res.ok&&hasRemote){applyData(r);setSync('ok');}
+    else if(res.ok&&!hasRemote){ if(!hadLocal)seed(); setSync('ok'); }   // empty backend -> local demo only (not pushed)
+    else { setSync('err'); }                                              // error -> keep whatever we have, do not seed
+    $('#sb-quarter').textContent=D.quarter||'Q2 2026';
+    render(CUR);
+  });
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+</script>
+</body>
+</html>
