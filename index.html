@@ -256,6 +256,10 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--tx)}
 
 /* weight chip + completion bar */
 .wchip{font-size:11px;font-family:var(--mono);background:var(--purple-bg);color:var(--purple-tx);padding:2px 7px;border-radius:6px;white-space:nowrap}
+.ownin{background:transparent;border:1px solid transparent;border-radius:6px;padding:3px 6px;font-size:13px;color:var(--tx);width:100%;font-family:var(--font)}
+.ownin:hover{border-color:var(--bdr)}
+.ownin:focus{outline:none;border-color:var(--blue);background:var(--surf);box-shadow:0 0 0 2px var(--blue-bg)}
+.ownin-hd{width:128px;font-size:12px;color:var(--tx2);flex:0 0 auto}
 .compbar{display:flex;align-items:center;gap:10px;margin:0 0 16px;padding:10px 14px;background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rlg);box-shadow:var(--shadow)}
 .compbar .prog{flex:1}
 .compbar .comppct{font-family:var(--mono);font-weight:600;font-size:13px;white-space:nowrap}
@@ -330,6 +334,7 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--tx)}
   </div>
 </div>
 
+<datalist id="owner-options"></datalist>
 <!-- Settings modal -->
 <div class="overlay" id="modal-settings">
   <div class="modal">
@@ -392,7 +397,7 @@ var ROCK_TYPES=['ideation','talent','build','ops','ceo'];
 var ROCK_LABELS={ideation:'Ideation Rocks',talent:'Talent Rocks',build:'Build Rocks',ops:'Operations Rocks',ceo:'Office CEO Rocks'};
 var ROCK_ARR={ideation:'ideationRocks',talent:'talentRocks',build:'buildRocks',ops:'opsRocks',ceo:'ceoRocks'};
 var STATUSES=['Not Started','On Track','At Risk','Done'];
-var PORTCOS=['Wellnest','Portoro','Bloomwell','Immersiv','Ownershift','Cedar Brands','Calibright','MARO'];
+var PORTCOS=['DCG','Wellnest','Portoro','Bloomwell','Immersiv','Ownershift','Cedar Brands','Calibright','MARO'];
 var BETTER_LEVELS=['Critical','High','Medium','Low'];
 var BETTER_STATUS=['Suggested','In Progress','Implemented'];
 var BLOCK_STATUS=['Blocked','In Progress','Resolved'];
@@ -471,6 +476,18 @@ function rockPct(rock){
 function rockWeight(r){var w=parseFloat(r.weight);return (isNaN(w)||w<=0)?1:w;}
 function weightedPct(rocks){var tw=0,acc=0;rocks.forEach(function(r){var w=rockWeight(r);tw+=w;acc+=w*rockPct(r);});return tw?Math.round(acc/tw):0;}
 function completionBar(rocks){var p=weightedPct(rocks);return '<div class="compbar"><span class="comppct">'+p+'%</span><div class="prog"><span style="width:'+p+'%"></span></div><span class="compsub">weighted completion · '+rocks.length+' rocks</span></div>';}
+/* Owner suggestions: collected from every owner ever typed, across all quarters */
+function ownerList(){
+  var s={};
+  Object.keys(WB.quarters).forEach(function(qk){var q=WB.quarters[qk]||{};
+    ['ideationRocks','talentRocks','buildRocks','opsRocks','ceoRocks'].forEach(function(a){(q[a]||[]).forEach(function(r){
+      if(r.owner&&r.owner.trim())s[r.owner.trim()]=1;
+      (r.subrocks||[]).forEach(function(sub){if(sub.owner&&sub.owner.trim())s[sub.owner.trim()]=1;});
+    });});
+  });
+  return Object.keys(s).sort();
+}
+function renderOwnerOptions(){var dl=$('#owner-options');if(!dl)return;dl.innerHTML=ownerList().map(function(o){return '<option value="'+esc(o)+'"></option>';}).join('');}
 function subStatus(s){return s.doneDate?'Done':(s.status||'Not Started');}
 
 /* ============================================================
@@ -607,6 +624,7 @@ function render(id){
   else if(id==='better')renderBetter();
   else if(id==='blockers')renderBlockers();
   else if(id==='support')renderSupport();
+  renderOwnerOptions();
   updateBadges();
 }
 function rerenderCurrent(){render(CUR);}
@@ -838,7 +856,8 @@ function rockCard(type,rock,idx,readonly){
   if(!readonly)h+='<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>';
   h+='<span class="avatar">'+esc(initials(rock.owner))+'</span>';
   h+='<span class="ttl" '+(readonly?'':'contenteditable onblur="rockSet(\''+type+'\',\''+rock.id+'\',\'title\',this.textContent)"')+' onclick="event.stopPropagation()">'+esc(rock.title||'Untitled rock')+'</span>';
-  h+='<span class="owner">'+(rock.owner?esc(rock.owner):'<span style="color:var(--tx3)">unassigned</span>')+'</span>';
+  if(readonly)h+='<span class="owner">'+(rock.owner?esc(rock.owner):'<span style="color:var(--tx3)">unassigned</span>')+'</span>';
+  else h+='<input class="ownin ownin-hd" list="owner-options" value="'+esc(rock.owner||'')+'" placeholder="owner" onclick="event.stopPropagation()" onchange="rockSet(\''+type+'\',\''+rock.id+'\',\'owner\',this.value);rerenderCurrent()">';
   h+='<span class="spacer"></span>';
   h+=chip(st);
   h+='<div class="progwrap"><div class="prog"><span style="width:'+pct+'%"></span></div></div><span class="pct">'+pct+'%</span>';
@@ -898,7 +917,7 @@ function subrocksTab(type,rock){
     var noTgt=!s.targetDate;
     h+='<tr'+(noTgt?' style="background:var(--red-bg)"':'')+'><td class="num" style="color:var(--tx3)">'+(si+1)+'</td>';
     h+='<td><span class="ce" contenteditable onblur="subSet(\''+type+'\',\''+rock.id+'\',\''+s.id+'\',\'title\',this.textContent)">'+esc(s.title)+'</span></td>';
-    h+='<td><span class="ce" contenteditable onblur="subSet(\''+type+'\',\''+rock.id+'\',\''+s.id+'\',\'owner\',this.textContent)">'+esc(s.owner)+'</span></td>';
+    h+='<td><input class="ownin" list="owner-options" value="'+esc(s.owner)+'" placeholder="Owner" onchange="subSet(\''+type+'\',\''+rock.id+'\',\''+s.id+'\',\'owner\',this.value)"></td>';
     h+='<td><select onchange="subSet(\''+type+'\',\''+rock.id+'\',\''+s.id+'\',\'portco\',this.value)">'+portcoOpts(s.portco)+'</select></td>';
     h+='<td><input type="date" value="'+esc(s.targetDate)+'" onchange="subSet(\''+type+'\',\''+rock.id+'\',\''+s.id+'\',\'targetDate\',this.value)"></td>';
     h+='<td><input type="date" value="'+esc(s.doneDate)+'" onchange="subDone(\''+type+'\',\''+rock.id+'\',\''+s.id+'\',this.value)"></td>';
@@ -960,7 +979,7 @@ function showAddRock(type){
   if(CUR!==type)switchTab(type);
   var f=$('#addform-'+type);if(!f)return;
   f.classList.add('on');
-  f.innerHTML='<div class="row"><div><label>Rock title</label><input id="ar-title-'+type+'" placeholder="What\'s the big quarterly goal?"></div><div><label>Owner</label><input id="ar-owner-'+type+'" placeholder="Who owns it?"></div></div><div class="acts"><button class="btn" onclick="hideAddRock(\''+type+'\')">Cancel</button><button class="btn pri" onclick="addRock(\''+type+'\')">Add Rock</button></div>';
+  f.innerHTML='<div class="row"><div><label>Rock title</label><input id="ar-title-'+type+'" placeholder="What\'s the big quarterly goal?"></div><div><label>Owner</label><input id="ar-owner-'+type+'" list="owner-options" placeholder="Who owns it?"></div></div><div class="acts"><button class="btn" onclick="hideAddRock(\''+type+'\')">Cancel</button><button class="btn pri" onclick="addRock(\''+type+'\')">Add Rock</button></div>';
   setTimeout(function(){var t=$('#ar-title-'+type);if(t)t.focus();},30);
 }
 function hideAddRock(type){var f=$('#addform-'+type);if(f){f.classList.remove('on');f.innerHTML='';}}
@@ -984,30 +1003,35 @@ function delRock(type,id,e){
    ============================================================ */
 function renderDashInd(){
   var p=$('#panel-dash-ind');
-  var subs=allSubs();
-  var people={};
-  subs.forEach(function(x){var o=(x.sub.owner||'').trim()||'Unassigned';(people[o]=people[o]||[]).push(x);});
-  // include rock owners with no sub-owner? keep to sub owners (workload lives in subs)
-  var names=Object.keys(people).sort(function(a,b){return people[b].length-people[a].length;});
+  var rby={},sby={};
+  allRocks().forEach(function(x){var o=(x.rock.owner||'').trim()||'Unassigned';(rby[o]=rby[o]||[]).push(x);});
+  allSubs().forEach(function(x){var o=(x.sub.owner||'').trim()||'Unassigned';(sby[o]=sby[o]||[]).push(x);});
+  var nm={};Object.keys(rby).forEach(function(n){nm[n]=1;});Object.keys(sby).forEach(function(n){nm[n]=1;});
+  var names=Object.keys(nm).sort(function(a,b){return ((rby[b]||[]).length+(sby[b]||[]).length)-((rby[a]||[]).length+(sby[a]||[]).length);});
   var sel=getDashFilter('ind');
   var h='<div class="filt"><span class="lbl">Filter:</span><select id="filt-ind" onchange="setDashFilter(\'ind\',this.value)"><option value="">All individuals</option>'+
     names.map(function(n){return '<option'+(sel===n?' selected':'')+'>'+esc(n)+'</option>';}).join('')+'</select></div>';
-  if(!names.length){h+=emptyState('user','No owners yet','Assign owners to sub-rocks to see workload here.');p.innerHTML=h;return;}
+  if(!names.length){h+=emptyState('user','No owners yet','Assign owners to rocks or sub-rocks to see workload here.');p.innerHTML=h;return;}
   names.filter(function(n){return !sel||sel===n;}).forEach(function(n){
-    var items=people[n];var done=items.filter(function(x){return subStatus(x.sub)==='Done';}).length;
-    var pct=Math.round(done/items.length*100);
-    var atRisk=items.filter(function(x){return subStatus(x.sub)==='At Risk';}).length;
-    var key='ind-'+n;var open=D.indCollapsed[key]!==true;
-    h+='<div class="dgrp'+(open?' open':'')+'"><div class="dgrp-hd" onclick="toggleGrp(\'ind\',\''+esc(n).replace(/'/g,"\\'")+'\')"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>';
+    var rk=rby[n]||[],sb=sby[n]||[];
+    var doneSubs=sb.filter(function(x){return subStatus(x.sub)==='Done';}).length;
+    var pct=sb.length?Math.round(doneSubs/sb.length*100):(rk.length?Math.round(rk.reduce(function(a,x){return a+rockPct(x.rock);},0)/rk.length):0);
+    var atRisk=sb.filter(function(x){return subStatus(x.sub)==='At Risk';}).length;
+    var key='ind-'+n;var open=D.indCollapsed[key]!==true;var nq=esc(n).replace(/'/g,"\\'");
+    h+='<div class="dgrp'+(open?' open':'')+'"><div class="dgrp-hd" onclick="toggleGrp(\'ind\',\''+nq+'\')"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>';
     h+='<span class="avatar">'+esc(initials(n))+'</span><span class="nm">'+esc(n)+'</span>';
-    h+='<span class="ct">'+items.length+' sub-rocks · '+pct+'% done'+(atRisk?' · '+atRisk+' at risk':'')+'</span><span class="spacer"></span>';
+    h+='<span class="ct">'+rk.length+' rocks · '+sb.length+' sub-rocks · '+pct+'% done'+(atRisk?' · '+atRisk+' at risk':'')+'</span><span class="spacer"></span>';
     h+='<div style="width:120px"><div class="prog"><span style="width:'+pct+'%"></span></div></div></div>';
     h+='<div class="dgrp-bd"><div class="card" style="padding:4px 0">';
-    items.sort(function(a,b){return SORTORD[subStatus(a.sub)]-SORTORD[subStatus(b.sub)];}).forEach(function(x){
+    rk.sort(function(a,b){return SORTORD[rockStatus(a.rock)]-SORTORD[rockStatus(b.rock)];}).forEach(function(x){
+      h+='<div class="drow"><span class="tag">Rock</span><div class="grow"><div>'+esc(x.rock.title||'(untitled)')+'</div><div class="rname">'+esc(ROCK_LABELS[x.type].replace(' Rocks',''))+' · '+rockPct(x.rock)+'% complete</div></div><span class="pct">'+rockPct(x.rock)+'%</span>'+chip(rockStatus(x.rock))+'</div>';
+    });
+    sb.sort(function(a,b){return SORTORD[subStatus(a.sub)]-SORTORD[subStatus(b.sub)];}).forEach(function(x){
       var d=daysUntil(x.sub.targetDate);var tag='';
       if(subStatus(x.sub)!=='Done'&&d!==null){if(d<0)tag='<span class="tag over">'+(-d)+'d over</span>';else if(d<=14)tag='<span class="tag soon">in '+d+'d</span>';}
-      h+='<div class="drow"><div class="grow"><div>'+esc(x.sub.title||'(untitled)')+'</div><div class="rname">'+esc(ROCK_LABELS[x.type].replace(' Rocks',''))+' · '+esc(x.rock.title||'')+(x.sub.portco?' · '+esc(x.sub.portco):'')+'</div></div>'+tag+chip(subStatus(x.sub))+'</div>';
+      h+='<div class="drow"><span class="tag">Sub</span><div class="grow"><div>'+esc(x.sub.title||'(untitled)')+'</div><div class="rname">'+esc(x.rock.title||'')+(x.sub.portco?' · '+esc(x.sub.portco):'')+'</div></div>'+tag+chip(subStatus(x.sub))+'</div>';
     });
+    if(!rk.length&&!sb.length)h+='<div class="empty" style="padding:14px">Nothing assigned.</div>';
     h+='</div></div></div>';
   });
   p.innerHTML=h;
@@ -1030,14 +1054,18 @@ function renderDashPortco(){
   order.filter(function(n){return !sel||sel===n;}).forEach(function(pc){
     var items=groups[pc];var done=items.filter(function(x){return subStatus(x.sub)==='Done';}).length;
     var pct=Math.round(done/items.length*100);
-    var c={'On Track':0,'At Risk':0,'Not Started':0,'Done':0};items.forEach(function(x){c[subStatus(x.sub)]++;});
-    var key='portco-'+pc;var open=D.portcoCollapsed[key]!==true;
-    h+='<div class="dgrp'+(open?' open':'')+'"><div class="dgrp-hd" onclick="toggleGrp(\'portco\',\''+esc(pc).replace(/'/g,"\\'")+'\')" style="background:var(--teal-bg);border-color:var(--teal)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>';
-    h+='<span class="nm" style="color:var(--teal-tx)">'+esc(pc)+'</span><span class="ct">'+items.length+' sub-rocks · '+pct+'% done</span><span class="spacer"></span>';
-    h+='<div class="mini">'+(c['At Risk']?'<span class="pill p-ar">'+c['At Risk']+' risk</span>':'')+(c['On Track']?'<span class="pill p-ot">'+c['On Track']+'</span>':'')+(c.Done?'<span class="pill p-dn">'+c.Done+'</span>':'')+'</div></div>';
+    var rg={},rorder=[];
+    items.forEach(function(x){var id=x.rock.id;if(!rg[id]){rg[id]={rock:x.rock,type:x.type,subs:[]};rorder.push(id);}rg[id].subs.push(x);});
+    var key='portco-'+pc;var open=D.portcoCollapsed[key]!==true;var pq=esc(pc).replace(/'/g,"\\'");
+    h+='<div class="dgrp'+(open?' open':'')+'"><div class="dgrp-hd" onclick="toggleGrp(\'portco\',\''+pq+'\')" style="background:var(--teal-bg);border-color:var(--teal)"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>';
+    h+='<span class="nm" style="color:var(--teal-tx)">'+esc(pc)+'</span><span class="ct">'+rorder.length+' rocks · '+items.length+' sub-rocks · '+pct+'% done</span><span class="spacer"></span>';
+    h+='<div style="width:120px"><div class="prog"><span style="width:'+pct+'%"></span></div></div></div>';
     h+='<div class="dgrp-bd"><div class="card" style="padding:4px 0">';
-    items.sort(function(a,b){return SORTORD[subStatus(a.sub)]-SORTORD[subStatus(b.sub)];}).forEach(function(x){
-      h+='<div class="drow"><span class="avatar">'+esc(initials(x.sub.owner))+'</span><div class="grow"><div>'+esc(x.sub.title||'(untitled)')+'</div><div class="rname">'+esc(x.sub.owner||'unassigned')+' · '+esc(x.rock.title||'')+'</div></div>'+chip(subStatus(x.sub))+'</div>';
+    rorder.forEach(function(id){var g=rg[id];
+      h+='<div class="drow"><span class="tag">Rock</span><div class="grow"><div>'+esc(g.rock.title||'(untitled)')+'</div><div class="rname">'+esc(ROCK_LABELS[g.type].replace(' Rocks',''))+' · '+esc(g.rock.owner||'unassigned')+'</div></div><span class="pct">'+rockPct(g.rock)+'%</span>'+chip(rockStatus(g.rock))+'</div>';
+      g.subs.sort(function(a,b){return SORTORD[subStatus(a.sub)]-SORTORD[subStatus(b.sub)];}).forEach(function(x){
+        h+='<div class="drow" style="padding-left:30px"><span class="avatar">'+esc(initials(x.sub.owner))+'</span><div class="grow"><div>'+esc(x.sub.title||'(untitled)')+'</div><div class="rname">'+esc(x.sub.owner||'unassigned')+'</div></div>'+chip(subStatus(x.sub))+'</div>';
+      });
     });
     h+='</div></div></div>';
   });
