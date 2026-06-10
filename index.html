@@ -59,6 +59,9 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--tx)}
 [data-theme="dark"] .brand .logo{color:#16161A}
 .brand .bname{font-weight:600;font-size:14px;color:var(--navy);letter-spacing:-.01em}
 .brand .bq{font-size:11px;color:var(--tx2);font-family:var(--mono)}
+.bq-sel{margin-top:3px;background:var(--surf2);border:1px solid var(--bdr);color:var(--tx2);font-family:var(--mono);font-size:11px;border-radius:6px;padding:2px 6px;max-width:160px;cursor:pointer}
+.bq-sel:hover{border-color:var(--bdr2);color:var(--tx)}
+.bq-sel:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-bg)}
 .nav{flex:1;padding:6px 10px 14px}
 .nav .grp{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--tx3);font-weight:600;padding:14px 10px 6px}
 .nav a{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:var(--r);color:var(--tx2);
@@ -296,7 +299,7 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--tx)}
       <div class="logo">DC</div>
       <div>
         <div class="bname">Downing Capital</div>
-        <div class="bq" id="sb-quarter">Q2 2026</div>
+        <select class="bq-sel" id="sb-quarter-sel" title="Switch quarter"></select>
       </div>
     </div>
     <nav class="nav" id="nav"></nav>
@@ -342,6 +345,21 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--tx)}
     </div>
   </div>
 </div>
+<!-- New quarter modal -->
+<div class="overlay" id="modal-newq">
+  <div class="modal">
+    <h3>New quarter</h3>
+    <p>Starts with no rocks. Your North Star metrics carry over (weekly values reset to blank).</p>
+    <label>Quarter name</label>
+    <input id="nq-name" placeholder="e.g. Q3 2026">
+    <label>Quarter start date (week 1)</label>
+    <input id="nq-start" type="date">
+    <div class="acts">
+      <button class="btn" onclick="closeModal('modal-newq')">Cancel</button>
+      <button class="btn pri" onclick="createQuarter()">Create quarter</button>
+    </div>
+  </div>
+</div>
 <!-- Confirm modal -->
 <div class="overlay" id="modal-confirm">
   <div class="modal">
@@ -384,15 +402,35 @@ var NS_STATUS=['On Track','At Risk','Off Track'];
 var PILLCLS={Done:'p-dn','On Track':'p-ot','At Risk':'p-ar','Not Started':'p-ns','Unplanned':'p-up'};
 var SORTORD={'At Risk':0,'On Track':1,'Not Started':2,'Done':3,'Unplanned':4};
 
-/* ---- State ---- */
-var D={
-  quarter:'Q2 2026',
-  qStart:'2026-04-03',
-  ns:[],
-  ideationRocks:[],talentRocks:[],buildRocks:[],opsRocks:[],ceoRocks:[],
-  better:[],blockers:[],support:[],
-  expanded:{},srTab:{},arCollapsed:{},indCollapsed:{},portcoCollapsed:{},activeFilter:{}
-};
+/* ---- State (multi-quarter) ----
+   WB = { activeQuarter, quarters:{ 'Q2 2026': <workbook>, ... } }
+   D  = the active quarter's workbook (all render code reads/writes D). */
+var WB={activeQuarter:'',quarters:{}};
+var D=null;
+function blankWorkbook(q,qStart){return {quarter:q||'',qStart:qStart||'',ns:[],ideationRocks:[],talentRocks:[],buildRocks:[],opsRocks:[],ceoRocks:[],better:[],blockers:[],support:[],expanded:{},srTab:{},arCollapsed:{},indCollapsed:{},portcoCollapsed:{},activeFilter:{}};}
+function ensureWB(wb){
+  ['ns','ideationRocks','talentRocks','buildRocks','opsRocks','ceoRocks','better','blockers','support'].forEach(function(k){if(!Array.isArray(wb[k]))wb[k]=[];});
+  ['expanded','srTab','arCollapsed','indCollapsed','portcoCollapsed','activeFilter'].forEach(function(k){if(!wb[k]||typeof wb[k]!=='object')wb[k]={};});
+  if(wb.quarter==null)wb.quarter='';return wb;
+}
+function quarterKeys(){return Object.keys(WB.quarters);}
+function setActiveQuarter(q){if(WB.quarters[q]){WB.activeQuarter=q;D=ensureWB(WB.quarters[q]);}}
+function wbHasData(wb){return wb&&wb.quarters&&Object.keys(wb.quarters).some(function(k){var q=wb.quarters[k]||{};return (q.ns&&q.ns.length)||['ideationRocks','talentRocks','buildRocks','opsRocks','ceoRocks'].some(function(a){return q[a]&&q[a].length;})||(q.better&&q.better.length)||(q.blockers&&q.blockers.length)||(q.support&&q.support.length);});}
+/* Accept either the new WB format or the legacy flat workbook, return a WB. */
+function toWB(raw){
+  if(!raw||typeof raw!=='object')return null;
+  if(raw.quarters&&typeof raw.quarters==='object'&&Object.keys(raw.quarters).length){
+    var aq=raw.activeQuarter&&raw.quarters[raw.activeQuarter]?raw.activeQuarter:Object.keys(raw.quarters)[0];
+    return {activeQuarter:aq,quarters:raw.quarters,_v:raw._v};
+  }
+  if(raw.ns||raw.ideationRocks||raw.buildRocks||raw.talentRocks||raw.opsRocks||raw.ceoRocks){
+    var q=raw.quarter||'Q2 2026';var bw=blankWorkbook(q,raw.qStart||'2026-04-03');
+    Object.keys(bw).forEach(function(k){if(raw[k]!==undefined&&raw[k]!==null)bw[k]=raw[k];});
+    bw.quarter=q;var o={activeQuarter:q,quarters:{},_v:raw._v};o.quarters[q]=bw;return o;
+  }
+  return null;
+}
+function setWB(wb){if(!wb||!wb.quarters||!Object.keys(wb.quarters).length)return false;WB={activeQuarter:wb.activeQuarter,quarters:wb.quarters,_v:wb._v};var aq=wb.activeQuarter&&wb.quarters[wb.activeQuarter]?wb.activeQuarter:Object.keys(wb.quarters)[0];setActiveQuarter(aq);return true;}
 
 /* ---- Helpers ---- */
 function uid(){return '_'+Math.random().toString(36).substr(2,9);}
@@ -443,16 +481,10 @@ function setSync(state,msg){
   var n=$('#sync');if(!n)return;n.className='sync'+(state==='err'?' err':state==='load'?' load':'');
   $('#sync-txt').textContent=msg||(state==='err'?'Sync error':state==='load'?'Saving…':'Saved');
 }
-function applyData(s){
-  if(!s)return;
-  ['quarter','qStart','ns','ideationRocks','talentRocks','buildRocks','opsRocks','ceoRocks',
-   'better','blockers','support','expanded','srTab','arCollapsed','indCollapsed','portcoCollapsed','activeFilter']
-   .forEach(function(k){ if(s[k]!==undefined && s[k]!==null) D[k]=s[k]; });
-}
 function save(){
   if(!_booted)return;
-  D._v=DATA_VERSION;
-  try{localStorage.setItem(STORE,JSON.stringify(D));}catch(e){}
+  WB._v=DATA_VERSION;
+  try{localStorage.setItem(STORE,JSON.stringify(WB));}catch(e){}
   if(!SB_ENABLED)return;
   setSync('load');
   clearTimeout(_saveTimer);
@@ -462,7 +494,7 @@ function pushSupabase(){
   fetch(SB_URL+'/rest/v1/'+SB_TABLE,{
     method:'POST',
     headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},
-    body:JSON.stringify({id:SB_ID,data:D,updated_at:new Date().toISOString()})
+    body:JSON.stringify({id:SB_ID,data:WB,updated_at:new Date().toISOString()})
   }).then(function(r){setSync(r.ok?'ok':'err');}).catch(function(){setSync('err');});
 }
 function loadSupabase(){
@@ -1133,21 +1165,52 @@ function doSearch(q){
 
 /* ---- Export ---- */
 function exportData(){
-  var blob=new Blob([JSON.stringify(D,null,2)],{type:'application/json'});
+  var blob=new Blob([JSON.stringify(WB,null,2)],{type:'application/json'});
   var a=document.createElement('a');a.href=URL.createObjectURL(blob);
-  a.download='downing-rocks-'+(D.quarter||'').replace(/\s+/g,'-')+'-'+new Date().toISOString().slice(0,10)+'.json';
+  a.download='downing-rocks-all-quarters-'+new Date().toISOString().slice(0,10)+'.json';
   a.click();
 }
 
 /* ---- Modals / settings / theme ---- */
 function openModal(id){$('#'+id).classList.add('on');}
 function closeModal(id){$('#'+id).classList.remove('on');}
-function openSettings(){$('#set-q').value=D.quarter||'';$('#set-start').value=D.qStart||'';openModal('modal-settings');}
+function openSettings(){$('#set-q').value=D.quarter||WB.activeQuarter||'';$('#set-start').value=D.qStart||'';openModal('modal-settings');}
 function saveSettings(){
-  D.quarter=$('#set-q').value.trim()||D.quarter;
-  D.qStart=$('#set-start').value||D.qStart;
-  $('#sb-quarter').textContent=D.quarter;
-  save();closeModal('modal-settings');render(CUR);
+  var newName=$('#set-q').value.trim();var newStart=$('#set-start').value;var old=WB.activeQuarter;
+  if(newName&&newName!==old&&!WB.quarters[newName]){
+    WB.quarters[newName]=WB.quarters[old];delete WB.quarters[old];
+    WB.quarters[newName].quarter=newName;WB.activeQuarter=newName;setActiveQuarter(newName);
+  }
+  if(newStart)D.qStart=newStart;
+  D.quarter=WB.activeQuarter;
+  save();renderQuarterSel();closeModal('modal-settings');render(CUR);
+}
+/* ---- Quarter switching / creation ---- */
+function renderQuarterSel(){
+  var s=$('#sb-quarter-sel');if(!s)return;
+  var ks=quarterKeys();
+  s.innerHTML=ks.map(function(k){return '<option value="'+esc(k)+'"'+(k===WB.activeQuarter?' selected':'')+'>'+esc(k)+'</option>';}).join('')+'<option value="__new">＋ New quarter…</option>';
+  s.onchange=function(){
+    if(this.value==='__new'){renderQuarterSel();openNewQuarter();return;}
+    setActiveQuarter(this.value);save();renderQuarterSel();switchTab('overview');
+  };
+}
+function nextQuarterName(s){var m=/Q([1-4])\s*(\d{4})/.exec(s||'');if(!m)return '';var q=+m[1],y=+m[2];q++;if(q>4){q=1;y++;}return 'Q'+q+' '+y;}
+function openNewQuarter(){
+  $('#nq-name').value=nextQuarterName(WB.activeQuarter)||'';
+  var ns='';if(D&&D.qStart){var d=new Date(D.qStart+'T00:00:00');if(!isNaN(d)){d.setDate(d.getDate()+91);ns=d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}}
+  $('#nq-start').value=ns;openModal('modal-newq');
+}
+function createQuarter(){
+  var name=$('#nq-name').value.trim();var start=$('#nq-start').value;
+  if(!name)return;
+  if(!WB.quarters[name]){
+    var wb=blankWorkbook(name,start||'');
+    // carry North Star metrics forward, reset weekly values
+    wb.ns=(D&&D.ns?D.ns:[]).map(function(m){return {type:m.type,metric:m.metric,owner:m.owner,target:m.target,weeks:['','','','','','','','','','','',''],status:'On Track'};});
+    WB.quarters[name]=wb;
+  }
+  setActiveQuarter(name);save();renderQuarterSel();closeModal('modal-newq');switchTab('overview');
 }
 var _cfCb=null;
 function confirmDelete(title,msg,cb){$('#cf-title').textContent=title;$('#cf-msg').textContent=msg;_cfCb=cb;openModal('modal-confirm');}
@@ -1161,7 +1224,9 @@ function toggleSidebar(force){var sb=$('#sidebar'),sc=$('#scrim');var on=force!=
    Seed data (first run only)
    ============================================================ */
 function seed(){
-  D.quarter='Q2 2026';D.qStart='2026-04-03';
+  WB={activeQuarter:'Q2 2026',quarters:{}};
+  WB.quarters['Q2 2026']=blankWorkbook('Q2 2026','2026-04-03');
+  setActiveQuarter('Q2 2026');
   D.ns=[
     {type:'LEADING',metric:'Qualified leads / week',owner:'Renata',target:'120',weeks:['8','10','9','12','11','13','10','12','','','',''],status:'On Track'},
     {type:'LAGGING',metric:'New revenue closed ($K)',owner:'Renata',target:'500',weeks:['20','35','40','55','60','45','70','','','','',''],status:'On Track'},
@@ -1231,25 +1296,24 @@ function boot(){
   var st;$('#search').oninput=function(){clearTimeout(st);var v=this.value;st=setTimeout(function(){doSearch(v);},180);};
   document.addEventListener('keydown',function(e){if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();$('#search').focus();}if(e.key==='Escape'){$('#search').value='';if(CUR==='__search')switchTab('overview');closeModal('modal-settings');closeModal('modal-confirm');}});
 
-  // load local cache first
-  var local=null;
-  try{var raw=localStorage.getItem(STORE);if(raw)local=JSON.parse(raw);}catch(e){}
-  if(local)applyData(local);
-  var hadLocal=!!(local&&(allRocks().length||D.ns.length||D.better.length||D.blockers.length||D.support.length));
+  // load local cache first (migrates legacy single-workbook format into a quarter)
+  var localWB=null;
+  try{var raw=localStorage.getItem(STORE);if(raw)localWB=toWB(JSON.parse(raw));}catch(e){}
+  if(localWB)setWB(localWB);
+  var hadLocal=wbHasData(WB);
+  if(!D)seed();
   _booted=true;
-  $('#sb-quarter').textContent=D.quarter||'Q2 2026';
+  renderQuarterSel();
   switchTab('overview');
 
   // remote (source of truth). Never seed/overwrite on a network error.
   setSync('load','Syncing…');
   loadSupabase().then(function(res){
-    var r=res.data;
-    var hasRemote=r&&(r.ideationRocks||r.talentRocks||r.buildRocks||r.opsRocks||r.ceoRocks||(r.ns&&r.ns.length)||(r.better&&r.better.length));
-    if(res.ok&&hasRemote){applyData(r);setSync('ok');}
-    else if(res.ok&&!hasRemote){ if(!hadLocal)seed(); setSync('ok'); }   // empty backend -> local demo only (not pushed)
-    else { setSync('err'); }                                              // error -> keep whatever we have, do not seed
-    $('#sb-quarter').textContent=D.quarter||'Q2 2026';
-    render(CUR);
+    var rwb=res.ok?toWB(res.data):null;
+    if(res.ok&&rwb&&wbHasData(rwb)){setWB(rwb);setSync('ok');}      // remote has data -> canonical
+    else if(res.ok){ if(!hadLocal)seed(); setSync('ok'); }           // empty backend -> local/demo only
+    else { setSync('err'); }                                         // network error -> keep what we have
+    renderQuarterSel();render(CUR);
   });
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
