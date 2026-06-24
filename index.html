@@ -173,6 +173,10 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--tx)}
 .rock-hd .pct{font-size:11px;font-family:var(--mono);color:var(--tx2);width:34px;text-align:right}
 .rock-hd .score{font-size:11px;font-family:var(--mono);background:var(--surf3);padding:2px 7px;border-radius:6px;color:var(--tx2)}
 .avatar{width:20px;height:20px;border-radius:50%;background:var(--blue-bg);color:var(--blue-tx);font-size:9.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}
+.avstack{display:inline-flex;align-items:center;flex:0 0 auto}
+.avstack .avatar{margin-right:-6px;box-shadow:0 0 0 1.5px var(--surf)}
+.avstack .avatar:last-child{margin-right:0}
+.avmore{background:var(--surf3);color:var(--tx2)}
 .rock-bd{display:none;border-top:1px solid var(--bdr);padding:0}
 .rock.open .rock-bd{display:block}
 .subtabs{display:flex;gap:4px;padding:10px 16px 0}
@@ -259,14 +263,51 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--tx)}
 .ownin{background:transparent;border:1px solid transparent;border-radius:6px;padding:3px 6px;font-size:13px;color:var(--tx);width:100%;font-family:var(--font)}
 .ownin:hover{border-color:var(--bdr)}
 .ownin:focus{outline:none;border-color:var(--blue);background:var(--surf);box-shadow:0 0 0 2px var(--blue-bg)}
-.ownin-hd{width:128px;font-size:12px;color:var(--tx2);flex:0 0 auto}
+.ownin-hd{width:172px;font-size:12px;color:var(--tx2);flex:0 0 auto}
 .prooflink{font-size:11px;color:var(--blue-tx);font-family:var(--mono);text-decoration:none;white-space:nowrap}
 .prooflink:hover{text-decoration:underline}
 .proofin{background:transparent;border:1px solid transparent;border-radius:6px;padding:3px 6px;font-size:12px;width:110px;color:var(--tx2)}
 .proofin:hover{border-color:var(--bdr)}
 .proofin:focus{outline:none;border-color:var(--blue);background:var(--surf)}
 .mtitle{padding:9px 11px;font-size:10.5px;font-weight:600;color:var(--tx2);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--bdr)}
-.autoval{font-family:var(--mono);color:var(--tx);border-bottom:1px dotted var(--bdr2);cursor:help}
+.autoval{font-family:var(--mono);color:var(--tx);border-bottom:1px dotted var(--bdr2);cursor:pointer}
+.kperson{font-size:11px;color:var(--tx3);font-family:var(--mono);margin-left:6px}
+.kc-chev svg{transition:transform .15s}
+.kc-chev.open svg{transform:rotate(180deg)}
+.kc-star{font-size:14px;line-height:1}
+.kc-star.on{color:var(--amber)}
+/* scorecard cards */
+.kpicards{display:flex;flex-direction:column;gap:8px}
+.kcard{border:1px solid var(--bdr);border-radius:var(--rlg);background:var(--surf);padding:11px 13px;box-shadow:var(--shadow)}
+.kc-main{display:flex;align-items:center;gap:9px}
+.kdot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;background:var(--bdr2)}
+.kdot.d-ot{background:var(--green)}.kdot.d-ar{background:var(--amber)}.kdot.d-off{background:var(--red)}.kdot.d-na{background:var(--bdr2)}
+.kname{font-weight:600;font-size:13.5px;outline:none;border-radius:4px;padding:0 2px}
+.kname:focus{background:var(--blue-bg)}
+.kunit{font-size:11px;color:var(--tx3);font-family:var(--mono)}
+.kc-main .spacer{flex:1}
+.kstatus{font-size:11px;font-weight:600;font-family:var(--mono);border:1px solid var(--bdr);border-radius:20px;padding:3px 8px;background:var(--surf);cursor:pointer}
+.kstatus:focus{outline:none;border-color:var(--blue)}
+.kc-btn{background:none;border:none;color:var(--tx3);cursor:pointer;font-size:14px;line-height:1;padding:4px 6px;border-radius:6px;text-decoration:none}
+.kc-btn:hover{background:var(--surf2);color:var(--tx)}
+.kc-meta{display:flex;align-items:center;gap:11px;margin-top:9px;flex-wrap:wrap}
+.kpv{font-size:12.5px;color:var(--tx2);display:inline-flex;align-items:center;gap:5px}
+.kpv b{color:var(--tx);font-weight:600}
+.kpv input{width:58px;background:transparent;border:1px solid transparent;border-radius:6px;padding:2px 5px;font-size:12.5px;font-family:var(--mono);color:var(--tx)}
+.kpv input:hover{border-color:var(--bdr)}
+.kpv input:focus{outline:none;border-color:var(--blue);background:var(--surf)}
+.kc-meta .arrow{color:var(--tx3)}
+.kbar{flex:1;min-width:80px;max-width:200px;height:7px;background:var(--surf3);border-radius:20px;overflow:hidden}
+.kbar>span{display:block;height:100%;border-radius:20px;transition:width .3s}
+.kbar .f-ot{background:var(--green)}.kbar .f-ar{background:var(--amber)}.kbar .f-off{background:var(--red)}.kbar .f-na{background:var(--bdr2)}
+.kvar{font-size:12px;font-family:var(--mono);color:var(--tx2);min-width:44px}
+.kmini{font-size:11px;font-family:var(--mono);color:var(--tx3);white-space:nowrap}
+.kc-edit{margin-top:11px;padding-top:11px;border-top:1px dashed var(--bdr);display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end}
+.kc-edit .fld{display:flex;flex-direction:column;gap:4px}
+.kc-edit label{font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:600}
+.kc-edit input,.kc-edit select{background:var(--surf2);border:1px solid var(--bdr);border-radius:6px;padding:6px 8px;font-size:12.5px;color:var(--tx)}
+.kc-edit input:focus,.kc-edit select:focus{outline:none;border-color:var(--blue);background:var(--surf)}
+.kc-edit .mon input{width:56px;text-align:center;font-family:var(--mono)}
 .dgrp-hd .ce.nm{outline:none;border-radius:4px;padding:0 3px}
 .dgrp-hd .ce.nm:focus{background:var(--blue-bg)}
 .compbar{display:flex;align-items:center;gap:10px;margin:0 0 16px;padding:10px 14px;background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rlg);box-shadow:var(--shadow)}
@@ -457,6 +498,8 @@ function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){retur
 function el(tag,cls,html){var e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e;}
 function getRocks(type){return D[ROCK_ARR[type]]||[];}
 function initials(name){if(!name)return '?';var p=name.trim().split(/\s+/);return ((p[0]||'')[0]||'')+((p[1]||'')[0]||'');}
+function ownersOf(rock){return String(rock&&rock.owner||'').split(',').map(function(s){return s.trim();}).filter(Boolean);}
+function avatarStack(names){if(!names||!names.length)return '<span class="avatar">?</span>';var h='<span class="avstack">'+names.slice(0,3).map(function(o){return '<span class="avatar" title="'+esc(o)+'">'+esc(initials(o))+'</span>';}).join('');if(names.length>3)h+='<span class="avatar avmore">+'+(names.length-3)+'</span>';return h+'</span>';}
 function chip(status){var cls=PILLCLS[status]||'p-ns';return '<span class="pill '+cls+'">'+esc(status)+'</span>';}
 
 /* date helpers — weeks derived from quarter start (improvement over hardcoded year) */
@@ -493,8 +536,8 @@ function ownerList(){
   var s={};
   Object.keys(WB.quarters).forEach(function(qk){var q=WB.quarters[qk]||{};
     ['ideationRocks','talentRocks','buildRocks','opsRocks','ceoRocks'].forEach(function(a){(q[a]||[]).forEach(function(r){
-      if(r.owner&&r.owner.trim())s[r.owner.trim()]=1;
-      (r.subrocks||[]).forEach(function(sub){if(sub.owner&&sub.owner.trim())s[sub.owner.trim()]=1;});
+      ownersOf(r).forEach(function(o){s[o]=1;});
+      (r.subrocks||[]).forEach(function(sub){ownersOf(sub).forEach(function(o){s[o]=1;});});
     });});
   });
   return Object.keys(s).sort();
@@ -565,8 +608,11 @@ var NAV=[
   ]},
   {grp:'Dashboards',items:[
     {id:'dash-ind',label:'By Individual',icon:'user'},
-    {id:'dash-portco',label:'By PortCo',icon:'grid'},
-    {id:'scorecard',label:'KPI Scorecard',icon:'gauge'}
+    {id:'dash-portco',label:'By PortCo',icon:'grid'}
+  ]},
+  {grp:'KPIs',items:[
+    {id:'allkpis',label:'All KPIs',icon:'gauge'},
+    {id:'scorecard',label:'By Person',icon:'user'}
   ]},
   {grp:'Operations',items:[
     {id:'better',label:'1% Better',icon:'spark'},
@@ -585,7 +631,8 @@ var PAGE_META={
   ceo:['Office CEO Rocks','Leadership priorities'],
   'dash-ind':['By Individual','Workload and completion by owner'],
   'dash-portco':['By PortCo','Sub-Rocks grouped by portfolio company'],
-  scorecard:['KPI Scorecard','Quarterly Plan vs Actual, by person'],
+  allkpis:['All KPIs','Every KPI across the team, grouped by area'],
+  scorecard:['KPIs by Person','Quarterly Plan vs Actual, per person'],
   better:['1% Better','Small improvements compound to 37x by year end'],
   blockers:['Blockers','Log anything stopping a Rock'],
   support:['Support Needed','What does the team need from leadership?']
@@ -606,7 +653,7 @@ function buildNav(){
 }
 function buildPanels(){
   var c=$('#content');
-  var ids=['overview','northstar','allrocks','ideation','talent','build','ops','ceo','dash-ind','dash-portco','scorecard','better','blockers','support'];
+  var ids=['overview','northstar','allrocks','ideation','talent','build','ops','ceo','dash-ind','dash-portco','allkpis','scorecard','better','blockers','support'];
   c.innerHTML=ids.map(function(id){return '<section class="panel" id="panel-'+id+'"></section>';}).join('');
 }
 var CUR='overview';
@@ -636,6 +683,7 @@ function render(id){
   else if(ROCK_PANELS[id])renderRockPanel(id);
   else if(id==='dash-ind')renderDashInd();
   else if(id==='dash-portco')renderDashPortco();
+  else if(id==='allkpis')renderAllKpis();
   else if(id==='scorecard')renderScorecard();
   else if(id==='better')renderBetter();
   else if(id==='blockers')renderBlockers();
@@ -754,7 +802,7 @@ function kpi(lab,big,meta,progId,tone){
 function alertRow(x,d){
   var lab=d<0?(-d)+'d overdue':d===0?'due today':'in '+d+'d';
   var cls=d<0?'over':'soon';
-  return '<div class="drow"><span class="avatar">'+esc(initials(x.sub.owner))+'</span>'+
+  return '<div class="drow">'+avatarStack(ownersOf(x.sub))+
     '<div class="grow"><div>'+esc(x.sub.title||'(untitled)')+'</div>'+
     '<div class="rname">'+esc(ROCK_LABELS[x.type].replace(' Rocks',''))+' · '+esc(x.rock.title||'')+(x.sub.portco?' · '+esc(x.sub.portco):'')+'</div></div>'+
     '<span class="tag '+cls+'">'+lab+'</span></div>';
@@ -873,10 +921,10 @@ function rockCard(type,rock,idx,readonly){
   var h='<div class="rock'+(open?' open':'')+(unp?' unp':'')+'" data-key="'+key+'">';
   h+='<div class="rock-hd" onclick="toggleRock(\''+key+'\',event)">';
   if(!readonly)h+='<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>';
-  h+='<span class="avatar">'+esc(initials(rock.owner))+'</span>';
+  h+=avatarStack(ownersOf(rock));
   h+='<span class="ttl" '+(readonly?'':'contenteditable onblur="rockSet(\''+type+'\',\''+rock.id+'\',\'title\',this.textContent)"')+' onclick="event.stopPropagation()">'+esc(rock.title||'Untitled rock')+'</span>';
   if(readonly)h+='<span class="owner">'+(rock.owner?esc(rock.owner):'<span style="color:var(--tx3)">unassigned</span>')+'</span>';
-  else h+='<input class="ownin ownin-hd" list="owner-options" value="'+esc(rock.owner||'')+'" placeholder="owner" onclick="event.stopPropagation()" onchange="rockSet(\''+type+'\',\''+rock.id+'\',\'owner\',this.value);rerenderCurrent()">';
+  else h+='<input class="ownin ownin-hd" list="owner-options" value="'+esc(rock.owner||'')+'" placeholder="owners (comma-separated)" title="Separate multiple owners with commas" onclick="event.stopPropagation()" onchange="rockSet(\''+type+'\',\''+rock.id+'\',\'owner\',this.value);rerenderCurrent()">';
   h+='<span class="spacer"></span>';
   h+=chip(st);
   h+='<div class="progwrap"><div class="prog"><span style="width:'+pct+'%"></span></div></div><span class="pct">'+pct+'%</span>';
@@ -936,7 +984,7 @@ function subrocksTab(type,rock){
     var noTgt=!s.targetDate;
     h+='<tr'+(noTgt?' style="background:var(--red-bg)"':'')+'><td class="num" style="color:var(--tx3)">'+(si+1)+'</td>';
     h+='<td><span class="ce" contenteditable onblur="subSet(\''+type+'\',\''+rock.id+'\',\''+s.id+'\',\'title\',this.textContent)">'+esc(s.title)+'</span></td>';
-    h+='<td><input class="ownin" list="owner-options" value="'+esc(s.owner)+'" placeholder="Owner" onchange="subSet(\''+type+'\',\''+rock.id+'\',\''+s.id+'\',\'owner\',this.value)"></td>';
+    h+='<td><input class="ownin" list="owner-options" value="'+esc(s.owner)+'" placeholder="Owner(s)" title="Separate multiple owners with commas" onchange="subSet(\''+type+'\',\''+rock.id+'\',\''+s.id+'\',\'owner\',this.value)"></td>';
     h+='<td><select onchange="subSet(\''+type+'\',\''+rock.id+'\',\''+s.id+'\',\'portco\',this.value)">'+portcoOpts(s.portco)+'</select></td>';
     h+='<td><input type="date" value="'+esc(s.targetDate)+'" onchange="subSet(\''+type+'\',\''+rock.id+'\',\''+s.id+'\',\'targetDate\',this.value)"></td>';
     h+='<td><input type="date" value="'+esc(s.doneDate)+'" onchange="subDone(\''+type+'\',\''+rock.id+'\',\''+s.id+'\',this.value)"></td>';
@@ -956,7 +1004,7 @@ function addSub(type,rid){
   save();rerenderCurrent();
 }
 function findSub(type,rid,sid){var r=getRocks(type).find(function(x){return x.id===rid;});if(!r)return null;return (r.subrocks||[]).find(function(s){return s.id===sid;});}
-function subSet(type,rid,sid,k,v){var s=findSub(type,rid,sid);if(!s)return;s[k]=v.trim?v.trim():v;save();rerenderCurrent();}
+function subSet(type,rid,sid,k,v){var s=findSub(type,rid,sid);if(!s)return;s[k]=v.trim?v.trim():v;if(k==='status'&&s[k]==='Done'&&!s.doneDate){var t=new Date();s.doneDate=t.getFullYear()+'-'+('0'+(t.getMonth()+1)).slice(-2)+'-'+('0'+t.getDate()).slice(-2);}save();rerenderCurrent();}
 function subDone(type,rid,sid,v){var s=findSub(type,rid,sid);if(!s)return;s.doneDate=v;if(v)s.status='Done';else if(s.status==='Done')s.status='On Track';save();rerenderCurrent();}
 function delSub(type,rid,sid){var r=getRocks(type).find(function(x){return x.id===rid;});r.subrocks=r.subrocks.filter(function(s){return s.id!==sid;});save();rerenderCurrent();}
 
@@ -1023,8 +1071,8 @@ function delRock(type,id,e){
 function renderDashInd(){
   var p=$('#panel-dash-ind');
   var rby={},sby={};
-  allRocks().forEach(function(x){var o=(x.rock.owner||'').trim()||'Unassigned';(rby[o]=rby[o]||[]).push(x);});
-  allSubs().forEach(function(x){var o=(x.sub.owner||'').trim()||'Unassigned';(sby[o]=sby[o]||[]).push(x);});
+  allRocks().forEach(function(x){var ows=ownersOf(x.rock);if(!ows.length)ows=['Unassigned'];ows.forEach(function(o){(rby[o]=rby[o]||[]).push(x);});});
+  allSubs().forEach(function(x){var ows=ownersOf(x.sub);if(!ows.length)ows=['Unassigned'];ows.forEach(function(o){(sby[o]=sby[o]||[]).push(x);});});
   var nm={};Object.keys(rby).forEach(function(n){nm[n]=1;});Object.keys(sby).forEach(function(n){nm[n]=1;});
   var names=Object.keys(nm).sort(function(a,b){return ((rby[b]||[]).length+(sby[b]||[]).length)-((rby[a]||[]).length+(sby[a]||[]).length);});
   var sel=getDashFilter('ind');
@@ -1083,7 +1131,7 @@ function renderDashPortco(){
     rorder.forEach(function(id){var g=rg[id];
       h+='<div class="drow"><span class="tag">Rock</span><div class="grow"><div>'+esc(g.rock.title||'(untitled)')+'</div><div class="rname">'+esc(ROCK_LABELS[g.type].replace(' Rocks',''))+' · '+esc(g.rock.owner||'unassigned')+'</div></div><span class="pct">'+rockPct(g.rock)+'%</span>'+chip(rockStatus(g.rock))+'</div>';
       g.subs.sort(function(a,b){return SORTORD[subStatus(a.sub)]-SORTORD[subStatus(b.sub)];}).forEach(function(x){
-        h+='<div class="drow" style="padding-left:30px"><span class="avatar">'+esc(initials(x.sub.owner))+'</span><div class="grow"><div>'+esc(x.sub.title||'(untitled)')+'</div><div class="rname">'+esc(x.sub.owner||'unassigned')+'</div></div>'+chip(subStatus(x.sub))+'</div>';
+        h+='<div class="drow" style="padding-left:30px">'+avatarStack(ownersOf(x.sub))+'<div class="grow"><div>'+esc(x.sub.title||'(untitled)')+'</div><div class="rname">'+esc(ownersOf(x.sub).join(', ')||'unassigned')+'</div></div>'+chip(subStatus(x.sub))+'</div>';
       });
     });
     h+='</div></div></div>';
@@ -1115,18 +1163,65 @@ function kpiAgg(k){return k.agg||defaultAgg(k);}
 function qHasMonths(k,qn){var idx=qMonthIdx(qn);return idx.some(function(i){return typeof (k.monthly&&k.monthly[i])==='number';});}
 function qActualVal(k,qn){var idx=qMonthIdx(qn);var vals=idx.map(function(i){return k.monthly?k.monthly[i]:'';});if(vals.some(function(v){return typeof v==='number';}))return aggregate(vals,kpiAgg(k));var q=k.q&&k.q[qn];return q?q.actual:'';}
 var _scOpen={},_scMonthly={};
-function scToggle(pi){var key='sc-'+pi;_scOpen[key]=_scOpen[key]===false?true:false;renderScorecard();}
-function scToggleMonthly(pi){_scMonthly[pi]=!_scMonthly[pi];renderScorecard();}
-function scQ(pi,ki,field,val){var k=WB.scorecard.people[pi].kpis[ki];var qn=activeQNum();k.q=k.q||{};k.q[qn]=k.q[qn]||{plan:'',actual:'',status:''};k.q[qn][field]=(field==='status')?val:numOrStr(val);save();renderScorecard();}
-function scK(pi,ki,field,val){WB.scorecard.people[pi].kpis[ki][field]=(val&&val.trim)?val.trim():val;save();renderScorecard();}
+function scToggle(pi){var key='sc-'+pi;_scOpen[key]=!_scOpen[key];render(CUR);}
+function scToggleMonthly(pi){_scMonthly[pi]=!_scMonthly[pi];render(CUR);}
+var _scKpiOpen={};
+function scKpiDetail(pi,ki){var key=pi+'-'+ki;_scKpiOpen[key]=!_scKpiOpen[key];render(CUR);}
+function scQ(pi,ki,field,val){var k=WB.scorecard.people[pi].kpis[ki];var qn=activeQNum();k.q=k.q||{};k.q[qn]=k.q[qn]||{plan:'',actual:'',status:''};k.q[qn][field]=(field==='status')?val:numOrStr(val);save();render(CUR);}
+function scK(pi,ki,field,val){WB.scorecard.people[pi].kpis[ki][field]=(val&&val.trim)?val.trim():val;save();render(CUR);}
 function scM(pi,kind,ki,mi,val){var arr=kind==='kpi'?WB.scorecard.people[pi].kpis:WB.scorecard.people[pi].metrics;arr[ki].monthly[mi]=numOrStr(val);save();}
-function scMQ(pi,ki,mi,val){WB.scorecard.people[pi].kpis[ki].monthly[mi]=numOrStr(val);save();renderScorecard();}
+function scMQ(pi,ki,mi,val){WB.scorecard.people[pi].kpis[ki].monthly[mi]=numOrStr(val);save();render(CUR);}
 function scMet(pi,ki,mi,val){WB.scorecard.people[pi].metrics[ki].monthly[mi]=numOrStr(val);save();}
+function scMetSet(pi,ki,field,val){WB.scorecard.people[pi].metrics[ki][field]=(val&&val.trim)?val.trim():val;save();render(CUR);}
+function addScMetric(pi){WB.scorecard.people[pi].metrics=WB.scorecard.people[pi].metrics||[];WB.scorecard.people[pi].metrics.push({name:'New metric',desc:'',unit:'',monthly:['','','','','','','','','','','','']});save();render(CUR);}
+function delScMetric(pi,ki){WB.scorecard.people[pi].metrics.splice(ki,1);save();render(CUR);}
+function primaryKpiName(pp,qn){
+  if(pp.primary&&pp.kpis.some(function(k){return k.name===pp.primary;}))return pp.primary;
+  var f=pp.kpis.filter(function(k){return k.q&&k.q[qn];})[0]||pp.kpis[0];
+  return f?f.name:'';
+}
+function scSetPrimary(pi,ki){WB.scorecard.people[pi].primary=WB.scorecard.people[pi].kpis[ki].name;save();render(CUR);}
+function kpiCard(pi,ki,qn,showPerson){
+  var pp=WB.scorecard.people[pi];var k=pp.kpis[ki];
+  var q=(k.q&&k.q[qn])||{plan:'',actual:'',status:''};
+  var hasMon=qHasMonths(k,qn);var actual=qActualVal(k,qn);var plan=q.plan;
+  var st=scStatusNorm(q.status);
+  var sc=st==='On Track'?'ot':st==='Behind'?'ar':st==='Off Track'?'off':'na';
+  var stcol=st==='On Track'?'var(--green-tx)':st==='Behind'?'var(--amber-tx)':st==='Off Track'?'var(--red)':'var(--tx3)';
+  var att='';if(typeof plan==='number'&&plan!==0&&typeof actual==='number')att=Math.max(0,Math.min(100,Math.abs(actual/plan)*100));
+  var varv='';if(typeof plan==='number'&&typeof actual==='number'){var dd=Math.round((actual-plan)*1000)/1000;varv=(dd>=0?'+':'')+dd;}
+  var qi=qMonthIdx(qn);var dkey=pi+'-'+ki;var dopen=_scKpiOpen[dkey];
+  var isPrim=k.name===primaryKpiName(pp,qn);
+  var h='<div class="kcard">';
+  h+='<div class="kc-main"><span class="kdot d-'+sc+'"></span><span class="kname ce" contenteditable onblur="scK('+pi+','+ki+',\'name\',this.textContent)">'+esc(k.name)+'</span>'+(k.unit?'<span class="kunit">'+esc(k.unit)+'</span>':'');
+  if(showPerson)h+='<span class="kperson">'+esc(pp.name)+(pp.area?' · '+esc(pp.area):'')+'</span>';
+  h+='<span class="spacer"></span>';
+  h+='<button class="kc-btn kc-star'+(isPrim?' on':'')+'" onclick="scSetPrimary('+pi+','+ki+')" title="'+(isPrim?'Shown in Overview dashboard':'Show this KPI in the Overview')+'">'+(isPrim?'★':'☆')+'</button>';
+  h+='<select class="kstatus" style="color:'+stcol+'" onchange="scQ('+pi+','+ki+',\'status\',this.value)"><option value="">— status —</option>'+['On Track','Behind','Off Track'].map(function(s){return '<option'+(st===s?' selected':'')+'>'+s+'</option>';}).join('')+'</select>';
+  if(k.proof)h+='<a class="kc-btn" href="'+esc(k.proof)+'" target="_blank" rel="noopener" title="Open proof">🔗</a>';
+  h+='<button class="kc-btn kc-chev'+(dopen?' open':'')+'" onclick="scKpiDetail('+pi+','+ki+')" title="Enter monthly actuals, aggregation & proof"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>';
+  h+='<button class="kc-btn" onclick="delScKpi('+pi+','+ki+')" title="Delete KPI">✕</button></div>';
+  h+='<div class="kc-meta">';
+  h+='<span class="kpv">Plan <input value="'+esc(plan)+'" onchange="scQ('+pi+','+ki+',\'plan\',this.value)"></span><span class="arrow">→</span>';
+  h+='<span class="kpv">Actual '+(hasMon?'<b class="autoval" onclick="scKpiDetail('+pi+','+ki+')" title="Auto: '+kpiAgg(k)+' of months. Click to edit months.">'+fmtKPI(actual,k.unit)+'</b>':'<input value="'+esc(q.actual)+'" placeholder="enter…" onchange="scQ('+pi+','+ki+',\'actual\',this.value)">')+'</span>';
+  h+='<div class="kbar"><span class="f-'+sc+'" style="width:'+(att===''?0:att)+'%"></span></div><span class="kvar">'+varv+'</span>';
+  var mini=qi.map(function(i){var v=(k.monthly&&k.monthly[i]!=null&&k.monthly[i]!=='')?fmtKPI(k.monthly[i],k.unit):'·';return MONTHS_ABBR[i].charAt(0)+' '+v;}).join('  ');
+  h+='<span class="kmini">'+esc(mini)+'</span></div>';
+  if(dopen){
+    h+='<div class="kc-edit">';
+    qi.forEach(function(i){h+='<div class="fld mon"><label>'+MONTHS_ABBR[i]+'</label><input value="'+esc(k.monthly&&k.monthly[i]!=null?k.monthly[i]:'')+'" onchange="scMQ('+pi+','+ki+','+i+',this.value)"></div>';});
+    h+='<div class="fld"><label>Aggregation</label><select onchange="scK('+pi+','+ki+',\'agg\',this.value)">'+['Average','Sum','Latest'].map(function(a){return '<option'+(kpiAgg(k)===a?' selected':'')+'>'+a+'</option>';}).join('')+'</select></div>';
+    h+='<div class="fld"><label>Unit</label><input style="width:64px" value="'+esc(k.unit||'')+'" onchange="scK('+pi+','+ki+',\'unit\',this.value)"></div>';
+    h+='<div class="fld" style="flex:1;min-width:170px"><label>Proof link</label><input value="'+esc(k.proof||'')+'" placeholder="paste URL" onchange="scK('+pi+','+ki+',\'proof\',this.value)"></div>';
+    h+='</div>';
+  }
+  h+='</div>';return h;
+}
 function scP(pi,field,val){WB.scorecard.people[pi][field]=(val&&val.trim)?val.trim():val;save();}
-function addScPerson(){WB.scorecard.people.push({name:'New person',area:'',kpis:[],metrics:[]});save();renderScorecard();}
-function delScPerson(pi,e){if(e)e.stopPropagation();var pp=WB.scorecard.people[pi];confirmDelete('Remove person?','Remove “'+(pp?pp.name:'')+'” and all their KPIs from the scorecard?',function(){WB.scorecard.people.splice(pi,1);save();renderScorecard();});}
-function addScKpi(pi){WB.scorecard.people[pi].kpis.push({name:'New KPI',desc:'',unit:'',monthly:['','','','','','','','','','','',''],q:{},proof:''});save();renderScorecard();}
-function delScKpi(pi,ki){WB.scorecard.people[pi].kpis.splice(ki,1);save();renderScorecard();}
+function addScPerson(){WB.scorecard.people.push({name:'New person',area:'',kpis:[],metrics:[]});save();render(CUR);}
+function delScPerson(pi,e){if(e)e.stopPropagation();var pp=WB.scorecard.people[pi];confirmDelete('Remove person?','Remove “'+(pp?pp.name:'')+'” and all their KPIs from the scorecard?',function(){WB.scorecard.people.splice(pi,1);save();render(CUR);});}
+function addScKpi(pi){WB.scorecard.people[pi].kpis.push({name:'New KPI',desc:'',unit:'',monthly:['','','','','','','','','','','',''],q:{},proof:''});save();render(CUR);}
+function delScKpi(pi,ki){WB.scorecard.people[pi].kpis.splice(ki,1);save();render(CUR);}
 function scMonthlyTable(pp,pi,kind,label){
   var arr=kind==='kpi'?pp.kpis:pp.metrics;if(!arr||!arr.length)return '';
   var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -1149,39 +1244,50 @@ function renderScorecard(){
     if(sel&&sel!==pp.name)return;
     var trackable=pp.kpis.filter(function(k){return k.q&&k.q[qn]&&scStatusNorm(k.q[qn].status);});
     var onCount=trackable.filter(function(k){return scStatusNorm(k.q[qn].status)==='On Track';}).length;
-    var key='sc-'+pi;var open=_scOpen[key]!==false;
+    var key='sc-'+pi;var open=!!_scOpen[key];
     h+='<div class="dgrp'+(open?' open':'')+'"><div class="dgrp-hd" onclick="scToggle('+pi+')"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>';
     h+='<span class="avatar">'+esc(initials(pp.name))+'</span><span class="ce nm" contenteditable onclick="event.stopPropagation()" onblur="scP('+pi+',\'name\',this.textContent)">'+esc(pp.name)+'</span>';
     h+='<span class="tag" style="margin-left:8px">'+esc(pp.area||'—')+'</span>';
     h+='<span class="ct">'+onCount+'/'+trackable.length+' KPIs on track · Q'+qn+'</span><span class="spacer"></span>';
     h+='<button class="btn-del" onclick="delScPerson('+pi+',event)" title="Remove person">✕</button></div>';
     var qi=qMonthIdx(qn);
-    h+='<div class="dgrp-bd"><div class="card tablecard" style="margin:0 0 8px"><table class="tbl"><thead><tr><th style="min-width:150px">KPI</th><th>Unit</th>'+qi.map(function(i){return '<th class="num">'+MONTHS_ABBR[i]+'</th>';}).join('')+'<th>Agg</th><th class="num">Plan</th><th class="num">Actual</th><th class="num">Var</th><th>Status</th><th>Proof</th><th></th></tr></thead><tbody>';
-    pp.kpis.forEach(function(k,ki){
-      var q=(k.q&&k.q[qn])||{plan:'',actual:'',status:''};
-      var hasMon=qHasMonths(k,qn);var actual=qActualVal(k,qn);
-      var varv='';if(typeof q.plan==='number'&&typeof actual==='number')varv=Math.round((actual-q.plan)*1000)/1000;
-      h+='<tr>';
-      h+='<td><span class="ce" contenteditable onblur="scK('+pi+','+ki+',\'name\',this.textContent)">'+esc(k.name)+'</span></td>';
-      h+='<td><input class="num" style="width:46px" value="'+esc(k.unit)+'" onchange="scK('+pi+','+ki+',\'unit\',this.value)"></td>';
-      qi.forEach(function(i){h+='<td><input class="num" style="width:44px" value="'+esc(k.monthly&&k.monthly[i]!=null?k.monthly[i]:'')+'" onchange="scMQ('+pi+','+ki+','+i+',this.value)"></td>';});
-      h+='<td><select onchange="scK('+pi+','+ki+',\'agg\',this.value)" title="How the months roll up into the quarter Actual">'+['Average','Sum','Latest'].map(function(a){return '<option'+(kpiAgg(k)===a?' selected':'')+'>'+a+'</option>';}).join('')+'</select></td>';
-      h+='<td><input class="num" style="width:56px" value="'+esc(q.plan)+'" onchange="scQ('+pi+','+ki+',\'plan\',this.value)"></td>';
-      h+='<td class="num">'+(hasMon?'<span class="autoval" title="auto: '+kpiAgg(k)+' of '+MONTHS_ABBR[qi[0]]+'–'+MONTHS_ABBR[qi[2]]+'">'+fmtKPI(actual,k.unit)+'</span>':'<input class="num" style="width:56px" value="'+esc(q.actual)+'" onchange="scQ('+pi+','+ki+',\'actual\',this.value)">')+'</td>';
-      h+='<td class="num">'+(varv===''?'':varv)+'</td>';
-      h+='<td><select onchange="scQ('+pi+','+ki+',\'status\',this.value)"><option value=""></option>'+['On Track','Behind','Off Track'].map(function(s){return '<option'+(scStatusNorm(q.status)===s?' selected':'')+'>'+s+'</option>';}).join('')+'</select></td>';
-      h+='<td>'+(k.proof?'<a href="'+esc(k.proof)+'" target="_blank" rel="noopener" class="prooflink" title="'+esc(k.proof)+'">link ↗</a> ':'')+'<input class="proofin" placeholder="paste URL" value="'+esc(k.proof||'')+'" onchange="scK('+pi+','+ki+',\'proof\',this.value)"></td>';
-      h+='<td><button class="btn-del" onclick="delScKpi('+pi+','+ki+')">✕</button></td></tr>';
-    });
-    h+='</tbody></table></div>';
+    h+='<div class="dgrp-bd"><div class="kpicards">';
+    if(!pp.kpis.length)h+='<div class="empty" style="padding:18px">No KPIs yet — add one below.</div>';
+    pp.kpis.forEach(function(k,ki){h+=kpiCard(pi,ki,qn,false);});
+    h+='</div>';
+    h+='<div style="margin:8px 0;display:flex;gap:8px"><button class="btn sm" onclick="addScKpi('+pi+')">'+ic2('plus')+'Add KPI</button><button class="btn sm" onclick="scToggleMonthly('+pi+')">'+(_scMonthly[pi]?'Hide':'Show')+' full year</button></div>';
+    h+='<div class="card tablecard" style="margin:0 0 8px"><div class="mtitle" style="display:flex;align-items:center;gap:8px"><span>Metrics — Q'+qn+'</span><span style="flex:1"></span><button class="btn sm" style="margin:-4px 0" onclick="addScMetric('+pi+')">'+ic2('plus')+'Add metric</button></div>';
     if(pp.metrics&&pp.metrics.length){
-      h+='<div class="card tablecard" style="margin:0 0 8px"><div class="mtitle">Metrics — Q'+qn+'</div><table class="tbl"><thead><tr><th style="min-width:150px">Metric</th><th>Unit</th>'+qi.map(function(i){return '<th class="num">'+MONTHS_ABBR[i]+'</th>';}).join('')+'</tr></thead><tbody>';
-      pp.metrics.forEach(function(mk,mki){h+='<tr><td title="'+esc(mk.desc||'')+'">'+esc(mk.name)+'</td><td>'+esc(mk.unit||'')+'</td>'+qi.map(function(i){return '<td><input class="num" style="width:44px" value="'+esc(mk.monthly&&mk.monthly[i]!=null?mk.monthly[i]:'')+'" onchange="scMet('+pi+','+mki+','+i+',this.value)"></td>';}).join('')+'</tr>';});
-      h+='</tbody></table></div>';
-    }
-    h+='<div style="margin:0 0 8px;display:flex;gap:8px"><button class="btn sm" onclick="addScKpi('+pi+')">'+ic2('plus')+'Add KPI</button><button class="btn sm" onclick="scToggleMonthly('+pi+')">'+(_scMonthly[pi]?'Hide':'Show')+' full year</button></div>';
+      h+='<table class="tbl"><thead><tr><th style="min-width:150px">Metric</th><th>Unit</th>'+qi.map(function(i){return '<th class="num">'+MONTHS_ABBR[i]+'</th>';}).join('')+'<th></th></tr></thead><tbody>';
+      pp.metrics.forEach(function(mk,mki){h+='<tr><td><span class="ce" contenteditable onblur="scMetSet('+pi+','+mki+',\'name\',this.textContent)">'+esc(mk.name)+'</span></td><td><input class="num" style="width:48px" value="'+esc(mk.unit||'')+'" onchange="scMetSet('+pi+','+mki+',\'unit\',this.value)"></td>'+qi.map(function(i){return '<td><input class="num" style="width:44px" value="'+esc(mk.monthly&&mk.monthly[i]!=null?mk.monthly[i]:'')+'" onchange="scMet('+pi+','+mki+','+i+',this.value)"></td>';}).join('')+'<td><button class="btn-del" onclick="delScMetric('+pi+','+mki+')">✕</button></td></tr>';});
+      h+='</tbody></table>';
+    }else{h+='<div class="empty" style="padding:14px">No metrics yet.</div>';}
+    h+='</div>';
     if(_scMonthly[pi]){h+=scMonthlyTable(pp,pi,'kpi','KPIs')+scMonthlyTable(pp,pi,'metric','Metrics');}
     h+='</div></div>';
+  });
+  p.innerHTML=h;
+}
+var _kpiFilter=null;
+function kpiFilter(s){_kpiFilter=_kpiFilter===s?null:s;render(CUR);}
+function renderAllKpis(){
+  ensureScorecard();var p=$('#panel-allkpis');var qn=activeQNum();
+  var people=WB.scorecard.people||[];
+  var all=[];people.forEach(function(pp,pi){pp.kpis.forEach(function(k,ki){all.push({pi:pi,ki:ki,pp:pp,k:k});});});
+  var c={'On Track':0,'Behind':0,'Off Track':0,'No status':0};
+  all.forEach(function(x){var st=scStatusNorm((x.k.q&&x.k.q[qn]&&x.k.q[qn].status)||'');c[st||'No status']++;});
+  var flt=_kpiFilter;
+  var defs=[['On Track','--green'],['Behind','--amber'],['Off Track','--red'],['No status','--bdr2']];
+  var h='<div class="filt"><span class="lbl">Showing quarter:</span><span class="tag">Q'+qn+'</span><span class="lbl">— set in the sidebar</span></div>';
+  h+='<div class="stats">'+defs.map(function(d){var on=flt===d[0];return '<div class="stat'+(on?' on':'')+'" onclick="kpiFilter(\''+d[0]+'\')"><div class="n">'+(c[d[0]]||0)+'</div><div class="l"><span class="sw" style="background:var('+d[1]+')"></span>'+d[0]+'</div></div>';}).join('')+'</div>';
+  if(!all.length){h+=emptyState('gauge','No KPIs yet','Add people and KPIs in the By Person view.');p.innerHTML=h;return;}
+  var areas={};all.forEach(function(x){var a=x.pp.area||'Other';(areas[a]=areas[a]||[]).push(x);});
+  Object.keys(areas).sort().forEach(function(a){
+    var items=areas[a].filter(function(x){if(!flt)return true;var st=scStatusNorm((x.k.q&&x.k.q[qn]&&x.k.q[qn].status)||'')||'No status';return st===flt;});
+    if(!items.length)return;
+    h+='<div class="sec-head"><h2>'+esc(a)+'</h2><span class="sub">'+items.length+'</span></div><div class="kpicards">';
+    items.forEach(function(x){h+=kpiCard(x.pi,x.ki,qn,true);});
+    h+='</div>';
   });
   p.innerHTML=h;
 }
@@ -1194,7 +1300,8 @@ function ovKpiSection(){
   h+='<div class="stats" style="margin-bottom:14px"><div class="stat"><div class="n" style="color:var(--green)">'+on+'</div><div class="l"><span class="sw" style="background:var(--green)"></span>On Track</div></div><div class="stat"><div class="n" style="color:var(--amber)">'+beh+'</div><div class="l"><span class="sw" style="background:var(--amber)"></span>Behind</div></div><div class="stat"><div class="n" style="color:var(--red)">'+off+'</div><div class="l"><span class="sw" style="background:var(--red)"></span>Off Track</div></div></div>';
   h+='<div class="card tablecard"><table class="tbl"><thead><tr><th>Person</th><th>Area</th><th>Primary KPI</th><th class="num">Plan</th><th class="num">Actual</th><th>Status</th></tr></thead><tbody>';
   people.forEach(function(pp){
-    var k=pp.kpis.filter(function(x){return x.q&&x.q[qn];})[0]||pp.kpis[0];
+    var pn=primaryKpiName(pp,qn);
+    var k=pp.kpis.filter(function(x){return x.name===pn;})[0]||pp.kpis[0];
     var q=(k&&k.q)?k.q[qn]:null;
     var av=k?qActualVal(k,qn):'';
     h+='<tr><td>'+esc(pp.name)+'</td><td><span class="tag">'+esc(pp.area)+'</span></td><td>'+(k?esc(k.name):'—')+'</td><td class="num">'+(q?fmtKPI(q.plan,k.unit):'')+'</td><td class="num">'+(k?fmtKPI(av,k.unit):'')+'</td><td>'+(q?scPill(q.status):'<span class="pill p-ns">—</span>')+'</td></tr>';
