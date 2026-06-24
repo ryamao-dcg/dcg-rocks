@@ -260,6 +260,15 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--tx)}
 .ownin:hover{border-color:var(--bdr)}
 .ownin:focus{outline:none;border-color:var(--blue);background:var(--surf);box-shadow:0 0 0 2px var(--blue-bg)}
 .ownin-hd{width:128px;font-size:12px;color:var(--tx2);flex:0 0 auto}
+.prooflink{font-size:11px;color:var(--blue-tx);font-family:var(--mono);text-decoration:none;white-space:nowrap}
+.prooflink:hover{text-decoration:underline}
+.proofin{background:transparent;border:1px solid transparent;border-radius:6px;padding:3px 6px;font-size:12px;width:110px;color:var(--tx2)}
+.proofin:hover{border-color:var(--bdr)}
+.proofin:focus{outline:none;border-color:var(--blue);background:var(--surf)}
+.mtitle{padding:9px 11px;font-size:10.5px;font-weight:600;color:var(--tx2);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--bdr)}
+.autoval{font-family:var(--mono);color:var(--tx);border-bottom:1px dotted var(--bdr2);cursor:help}
+.dgrp-hd .ce.nm{outline:none;border-radius:4px;padding:0 3px}
+.dgrp-hd .ce.nm:focus{background:var(--blue-bg)}
 .compbar{display:flex;align-items:center;gap:10px;margin:0 0 16px;padding:10px 14px;background:var(--surf);border:1px solid var(--bdr);border-radius:var(--rlg);box-shadow:var(--shadow)}
 .compbar .prog{flex:1}
 .compbar .comppct{font-family:var(--mono);font-weight:600;font-size:13px;white-space:nowrap}
@@ -391,6 +400,9 @@ var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI
 var SB_TABLE='rocks_workbook';
 var SB_ID='downing_capital';
 var SB_ENABLED=true; /* set false to run purely on localStorage */
+
+/* ---- Baked team scorecard (imported from Team Scorecard.xlsx; used to initialise WB.scorecard once) ---- */
+var BAKED_SCORECARD={"people":[{"name":"Sean","area":"Talent Acquisition","kpis":[{"name":"Timely Fill","desc":"Roles Closed within target timeline","unit":"%","monthly":[0.66,"",0.8,0.5,"","","","","","","",""],"q":{},"proof":""},{"name":"Successful Fill","desc":"Roles Closed successfully","unit":"%","monthly":[1,"",1,1,"","","","","","","",""],"q":{"2":{"plan":1,"actual":1,"status":"✅ On Track"}},"proof":""},{"name":"Retention rate","desc":"% roles closed that stayed more than 3 months","unit":"%","monthly":[1,1,1,1,"","","","","","","",""],"q":{"2":{"plan":0.9,"actual":1,"status":"✅ On Track"}},"proof":""},{"name":"Avg. number of recs","desc":"# roles","unit":"#","monthly":[4,6,8,11,"","","","","","","",""],"q":{},"proof":""},{"name":"Fill Rate","desc":"","unit":"%","monthly":["","","","","","","","","","","",""],"q":{"2":{"plan":0.9,"actual":0.5,"status":"🔴 Off Track"}},"proof":""},{"name":"Avg. number of racks","desc":"","unit":"#","monthly":["","","","","","","","","","","",""],"q":{"2":{"plan":6,"actual":11,"status":"✅ On Track"}},"proof":""}],"metrics":[{"name":"# Open Roles","desc":"Active roles being worked on at end of month","unit":"#","monthly":[6,4,"","","","","","","","","",""]},{"name":"Sourcing Volume","desc":"# Sourcing per week","unit":"#","monthly":[120,135,"","","","","","","","","",""]},{"name":"Sourcing Volume per role","desc":"Candidates Sourced / Role","unit":"#","monthly":[80,135,"","","","","","","","","",""]},{"name":"Screening Volume","desc":"# Screens per week","unit":"#","monthly":[26,24,"","","","","","","","","",""]},{"name":"Screening Volume per role","desc":"Candidates Screened / role","unit":"#","monthly":[17.3333,24,"","","","","","","","","",""]},{"name":"Time to Hire","desc":"First Interview to Accepted offer (days)","unit":"Days","monthly":["","","","","","","","","","","",""]},{"name":"# Roles Filled","desc":"Roles successfully filled in period","unit":"#","monthly":[4,"","","","","","","","","","",""]},{"name":"% TA Hours Billed PortCo","desc":"% Hours billed to PortCo","unit":"%","monthly":["","","","","","","","","","","",""]},{"name":"Capacity Utilization","desc":"Effective time dedicated to role (Screen + Source Volume per week) per target time","unit":"","monthly":[0.8333,0.8182,0,0,0,0,0,0,0,0,0,0]}]},{"name":"Matt","area":"Talent Acquisition","kpis":[{"name":"Timely Fill","desc":"Roles Closed within target timeline","unit":"%","monthly":[0.87,1,0.8,1,1,"","","","","","",""],"q":{},"proof":"https://jessedowning-my.sharepoint.com/:x:/r/personal/spark_downingcap_com/_layouts/15/Doc.aspx?sourcedoc=%7B988B1667-8086-5619-29EA-41234E024093%7D&file=Matthew%20KPIs%202025-26.xlsx&action=default&mobileredirect=true&DefaultItemOpen=1"},{"name":"Successful Fill","desc":"Roles Closed successfully","unit":"%","monthly":[1,1,1,1,1,"","","","","","",""],"q":{"2":{"plan":1,"actual":1,"status":"✅ On Track"}},"proof":""},{"name":"Retention rate","desc":"% roles closed that stayed more than 3 months","unit":"%","monthly":["","","","","","","","","","","",""],"q":{"2":{"plan":0.9,"actual":"","status":""}},"proof":""},{"name":"Avg. number of recs","desc":"# roles","unit":"#","monthly":[6,7,7,6,5,"","","","","","",""],"q":{},"proof":""},{"name":"Fill Rate","desc":"","unit":"%","monthly":["","","","","","","","","","","",""],"q":{"2":{"plan":0.9,"actual":1,"status":"✅ On Track"}},"proof":""},{"name":"Avg. number of racks","desc":"","unit":"#","monthly":["","","","","","","","","","","",""],"q":{"2":{"plan":6,"actual":5.5,"status":"⚠️ Behind"}},"proof":""}],"metrics":[{"name":"# Open Roles","desc":"Active roles being worked on at end of month","unit":"#","monthly":[6,7,7,6,5,"","","","","","",""]},{"name":"Sourcing Volume","desc":"Candidates Sourced","unit":"#","monthly":[453,742,412,677,155,"","","","","","",""]},{"name":"Sourcing Volume per role","desc":"Avg Candidates sourced/ role","unit":"#","monthly":[75.5,106,58.8571,112.8333,31,"","","","","","",""]},{"name":"Screening Volume","desc":"# Screens per week","unit":"#","monthly":[32,31,34,40,29,"","","","","","",""]},{"name":"Screening Volume per role","desc":"Avg candidates screened/ role","unit":"#","monthly":[21.3333,17.7143,19.4286,26.6667,23.2,"","","","","","",""]},{"name":"Time to Hire","desc":"First Interview to Accepted offer (days)","unit":"Days","monthly":["","","","","","","","","","","",""]},{"name":"# Roles Filled","desc":"Roles successfully filled in period","unit":"#","monthly":["","","","","","","","","","","",""]},{"name":"% TA Hours Billed PortCo","desc":"% Hours billed to PortCo","unit":"%","monthly":["","","","","","","","","","","",""]},{"name":"Capacity Utilization","desc":"Effective time dedicated to role (Screen + Source Volume per week) per target time","unit":"","monthly":[0.9561,1.0793,0.9808,1.251,0.7374,0,0,0,0,0,0,0]}]},{"name":"Mariana","area":"Research","kpis":[{"name":"Calls Scheduled","desc":"# call scheduled / Week","unit":"#/wk","monthly":["","","",40,"","","","","","","",""],"q":{"2":{"plan":15,"actual":40,"status":"✅ On Track"}},"proof":""},{"name":"Research Calls","desc":"# calls / Week (Mari's Top of Funnel Ideas)","unit":"#/wk","monthly":["","","",22,"","","","","","","",""],"q":{"2":{"plan":15,"actual":22,"status":"✅ On Track"}},"proof":""},{"name":"# Top of Funnel Ideas","desc":"# top of funnel ideas/wk","unit":"#","monthly":["","","",4,"","","","","","","",""],"q":{"2":{"plan":4,"actual":4,"status":"✅ On Track"}},"proof":""}],"metrics":[{"name":"Call Rating","desc":"Average Call Rating","unit":"Avg","monthly":["","","",4.3529,"","","","","","","",""]},{"name":"Avg Cost/Call","desc":"$400/hr target","unit":"Avg $/hr","monthly":["","","",229.6875,"","","","","","","",""]}]},{"name":"Philip","area":"Research","kpis":[{"name":"Research Calls","desc":"# calls held / week","unit":"#/wk","monthly":["","","","","","","","","","","",""],"q":{"1":{"plan":20,"actual":"","status":""},"2":{"plan":20,"actual":"","status":""},"3":{"plan":20,"actual":"","status":""},"4":{"plan":20,"actual":"","status":""}},"proof":""},{"name":"Research Projects","desc":"Avg # open research project with more than 10 calls done / week","unit":"#","monthly":["","","","","","","","","","","",""],"q":{"1":{"plan":5,"actual":"","status":""},"2":{"plan":5,"actual":"","status":""},"3":{"plan":5,"actual":"","status":""},"4":{"plan":5,"actual":"","status":""}},"proof":""},{"name":"# Approved Ideas","desc":"# ideas approved","unit":"#","monthly":["","",1,"","",1,"","",1,"","",1],"q":{"1":{"plan":2,"actual":0,"status":"🔴 Off Track"},"2":{"plan":2,"actual":0,"status":"🔴 Off Track"},"3":{"plan":2,"actual":0,"status":"🔴 Off Track"},"4":{"plan":2,"actual":0,"status":"🔴 Off Track"}},"proof":""}],"metrics":[{"name":"# New Top Funnel Ideas","desc":"# Ideas that were started that month","unit":"#","monthly":["","","","","","","","","","","",""]}]},{"name":"Renata","area":"Operations","kpis":[{"name":"Rocks Completion","desc":"% Rocks delivered on time","unit":"%","monthly":["","",0.7,0,0.13,"","","","","","",""],"q":{"2":{"plan":0.65,"actual":0.13,"status":"🔴 Off Track"}},"proof":""},{"name":"Finance Special Projects","desc":"New or improved process implemented","unit":"%","monthly":["","","",0,0,"","","","","","",""],"q":{"2":{"plan":1,"actual":0,"status":"🔴 Off Track"}},"proof":""},{"name":"Operations Special Projects","desc":"New or improved process implemented","unit":"#","monthly":["","","",0,0,"","","","","","",""],"q":{"2":{"plan":1,"actual":0,"status":"🔴 Off Track"}},"proof":""}],"metrics":[{"name":"CEO NPS","desc":"CEO satisfaction score (1–5 rating)","unit":"Score","monthly":["",4.25,"","","","","","","","","",""]},{"name":"Time Allocation","desc":"Hours billed to PortCo","unit":"Hours","monthly":[59.8,57.5,85,92.9,37.1,"","","","","","",""]}]},{"name":"Ygor","area":"Operations","kpis":[{"name":"Avg FCoE Score","desc":"Avg Score assigned to PortCos (Financial Min Req)","unit":"Score","monthly":["",2.0362,"","","","","","","","","",""],"q":{"2":{"plan":2.3,"actual":"","status":""}},"proof":""},{"name":"Fund Closing","desc":"Days to close the month","unit":"Days","monthly":["","",10,13,"","","","","","","",""],"q":{"2":{"plan":13,"actual":13,"status":"✅ On Track"}},"proof":""},{"name":"Rocks Completion","desc":"% Rocks delivered","unit":"%","monthly":[0,0,0.4,0,0.1785,"","","","","","",""],"q":{"2":{"plan":0.65,"actual":0.1785,"status":"🔴 Off Track"}},"proof":""}],"metrics":[{"name":"Time Allocation","desc":"Hours billed to PortCo","unit":"Hours","monthly":[58.2,65.6,86.9,42.4,36.4,"","","","","","",""]},{"name":"Finance NPS","desc":"Score from Finance Leads","unit":"Score","monthly":["","","","","","","","","","","",""]}]},{"name":"Leticia","area":"Operations","kpis":[{"name":"Avg Compliance Score","desc":"Avg Score assigned to PortCos","unit":"Score","monthly":["","","",2.39,"","","","","","","",""],"q":{"2":{"plan":2.3,"actual":2.39,"status":"✅ On Track"}},"proof":""},{"name":"Rocks Completion","desc":"% Rocks delivered","unit":"%","monthly":[0,0,0.666,0,0.2812,"","","","","","",""],"q":{"2":{"plan":0.65,"actual":0.2812,"status":"🔴 Off Track"}},"proof":""}],"metrics":[{"name":"Executive Support Quality","desc":"Jesse's satisfaction score (monthly 1–5 rating on calendar accuracy, responsiveness, anticipation of needs)","unit":"Score","monthly":["","","","","","","","","","","",""]},{"name":"Time Allocation","desc":"Hours billed to PortCo","unit":"Hours","monthly":[59.05,45.34,89.51,38.5,21,"","","","","","",""]},{"name":"Culture Score","desc":"Score from Internal Team","unit":"Score","monthly":["","","","","","","","","","","",""]},{"name":"EA NPS","desc":"Score from Eas","unit":"Score","monthly":["","","","","","","","","","","",""]}]},{"name":"Leonardo","area":"Build","kpis":[{"name":"Free Cash Flow Variance","desc":"% Free Cash Flow Variance vs Plan (Underperformance)","unit":"%","monthly":["","",0.15,"","","","","","","","",""],"q":{"2":{"plan":0.3,"actual":"","status":""}},"proof":""},{"name":"Rocks Completion","desc":"% Rocks delivered","unit":"%","monthly":[0,0.4,0.5,0,"","","","","","","",""],"q":{"2":{"plan":0.65,"actual":0,"status":"🔴 Off Track"}},"proof":""},{"name":"Ebitda Variance","desc":"","unit":"%","monthly":["","","","","","","","","","","",""],"q":{"2":{"plan":0.3,"actual":"","status":""}},"proof":""}],"metrics":[{"name":"Min Time Allocation","desc":"Per PortCo","unit":"Hours","monthly":["","","","","","","","","","","",""]},{"name":"Cedar Brands","desc":"Min 3hr/wk","unit":"","monthly":["","","","","","","","","","","",""]},{"name":"Ownershift","desc":"Min 3hr/wk","unit":"","monthly":["","","","","","","","","","","",""]},{"name":"Calibright","desc":"Min 5hr/wk","unit":"","monthly":["","","","","","","","","","","",""]},{"name":"CEO NPS","desc":"CEO satisfaction score (1–5 rating)","unit":"Score","monthly":["",4.25,"","","","","","","","","",""]}]},{"name":"Zina","area":"Build","kpis":[{"name":"Free Cash Flow Variance","desc":"% Free Cash Flow Variance vs Plan (Underperformance)","unit":"%","monthly":["","",0.4,"","","","","","","","",""],"q":{"2":{"plan":0.3,"actual":"","status":""}},"proof":""},{"name":"Rocks Completion","desc":"% Rocks delivered","unit":"%","monthly":["","",0.15,"","","","","","","","",""],"q":{"2":{"plan":0.65,"actual":"","status":""}},"proof":""},{"name":"Ebitda Variance","desc":"% EBITDA Variance vs Plan (Underperformance)","unit":"%","monthly":["","","","","","","","","","","",""],"q":{"2":{"plan":0.3,"actual":"","status":""}},"proof":""}],"metrics":[{"name":"Min Time Allocation","desc":"Per PortCo","unit":"Hours","monthly":["","","","","","","","","","","",""]},{"name":"Maro","desc":"3hr/wk","unit":"","monthly":["","","","","","","","","","","",""]},{"name":"Immersiv","desc":"5hr/wk","unit":"","monthly":["","","","","","","","","","","",""]},{"name":"Wellnest","desc":"3hr/wk","unit":"","monthly":["","","","","","","","","","","",""]},{"name":"CEO NPS","desc":"CEO satisfaction score (1–5 rating)","unit":"Score","monthly":["",4.25,"","","","","","","","","",""]}]},{"name":"Fausto","area":"Build","kpis":[{"name":"Free Cash Flow Variance","desc":"% Free Cash Flow Variance vs Plan (Underperformance)","unit":"%","monthly":["","","","","","","","","","","",""],"q":{"2":{"plan":0.3,"actual":"","status":""}},"proof":""},{"name":"Rocks Completion","desc":"% Rocks delivered","unit":"%","monthly":["","","","","","","","","","","",""],"q":{"2":{"plan":0.65,"actual":"","status":""}},"proof":""},{"name":"Ebitda Variance","desc":"% EBITDA Variance vs Plan (Underperformance)","unit":"%","monthly":["","","","","","","","","","","",""],"q":{"2":{"plan":0.3,"actual":"","status":""}},"proof":""}],"metrics":[{"name":"Min Time Allocation","desc":"Per PortCo","unit":"Hours","monthly":["","","","","","","","","","","",""]},{"name":"Bloomwell","desc":"5hr/wk","unit":"","monthly":["","","","","","","","","","","",""]},{"name":"Portoro","desc":"1hr/wk","unit":"","monthly":["","","","","","","","","","","",""]},{"name":"Cedar Brands","desc":"3hr/wk","unit":"","monthly":["","","","","","","","","","","",""]},{"name":"Ownershift","desc":"3hr/wk","unit":"","monthly":["","","","","","","","","","","",""]},{"name":"Calibright","desc":"3hr/wk","unit":"","monthly":["","","","","","","","","","","",""]},{"name":"CEO NPS","desc":"CEO satisfaction score (1–5 rating)","unit":"Score","monthly":["",4.25,"","","","","","","","","",""]}]}]};
 
 /* ---- Enums ---- */
 var ROCK_TYPES=['ideation','talent','build','ops','ceo'];
@@ -535,7 +547,8 @@ var ICONS={
   grid:'<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>',
   spark:'<path d="M13 2 3 14h9l-1 8 10-12h-9z"/>',
   block:'<circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/>',
-  hand:'<path d="M18 11V6a2 2 0 0 0-4 0M14 10V4a2 2 0 0 0-4 0v2M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>'
+  hand:'<path d="M18 11V6a2 2 0 0 0-4 0M14 10V4a2 2 0 0 0-4 0v2M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>',
+  gauge:'<path d="M12 14l3.5-3.5"/><path d="M3.05 13a9 9 0 1 1 17.9 0"/><circle cx="12" cy="14" r="1.5"/>'
 };
 function ic(k){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+(ICONS[k]||'')+'</svg>';}
 
@@ -552,7 +565,8 @@ var NAV=[
   ]},
   {grp:'Dashboards',items:[
     {id:'dash-ind',label:'By Individual',icon:'user'},
-    {id:'dash-portco',label:'By PortCo',icon:'grid'}
+    {id:'dash-portco',label:'By PortCo',icon:'grid'},
+    {id:'scorecard',label:'KPI Scorecard',icon:'gauge'}
   ]},
   {grp:'Operations',items:[
     {id:'better',label:'1% Better',icon:'spark'},
@@ -571,6 +585,7 @@ var PAGE_META={
   ceo:['Office CEO Rocks','Leadership priorities'],
   'dash-ind':['By Individual','Workload and completion by owner'],
   'dash-portco':['By PortCo','Sub-Rocks grouped by portfolio company'],
+  scorecard:['KPI Scorecard','Quarterly Plan vs Actual, by person'],
   better:['1% Better','Small improvements compound to 37x by year end'],
   blockers:['Blockers','Log anything stopping a Rock'],
   support:['Support Needed','What does the team need from leadership?']
@@ -591,7 +606,7 @@ function buildNav(){
 }
 function buildPanels(){
   var c=$('#content');
-  var ids=['overview','northstar','allrocks','ideation','talent','build','ops','ceo','dash-ind','dash-portco','better','blockers','support'];
+  var ids=['overview','northstar','allrocks','ideation','talent','build','ops','ceo','dash-ind','dash-portco','scorecard','better','blockers','support'];
   c.innerHTML=ids.map(function(id){return '<section class="panel" id="panel-'+id+'"></section>';}).join('');
 }
 var CUR='overview';
@@ -621,6 +636,7 @@ function render(id){
   else if(ROCK_PANELS[id])renderRockPanel(id);
   else if(id==='dash-ind')renderDashInd();
   else if(id==='dash-portco')renderDashPortco();
+  else if(id==='scorecard')renderScorecard();
   else if(id==='better')renderBetter();
   else if(id==='blockers')renderBlockers();
   else if(id==='support')renderSupport();
@@ -716,6 +732,9 @@ function renderOverview(){
   if(!soon.length)html+='<div class="empty" style="padding:18px">Nothing due soon.</div>';
   else html+=soon.slice(0,7).map(function(o){return alertRow(o.x,o.d);}).join('');
   html+='</div></div>';
+
+  // Team KPI dashboard
+  html+=ovKpiSection();
 
   // North star snapshot
   if(D.ns.length){
@@ -1080,6 +1099,110 @@ function toggleGrp(kind,name){
 }
 
 /* ============================================================
+   KPI SCORECARD (year-level; quarterly Plan vs Actual)
+   ============================================================ */
+function activeQNum(){var m=/Q([1-4])/.exec(WB.activeQuarter||'');return m?m[1]:'2';}
+function ensureScorecard(){if(!WB.scorecard||!WB.scorecard.people){WB.scorecard=JSON.parse(JSON.stringify(BAKED_SCORECARD));return true;}return false;}
+function scStatusNorm(s){s=(s||'').toLowerCase();if(s.indexOf('off')>=0)return 'Off Track';if(s.indexOf('behind')>=0)return 'Behind';if(s.indexOf('track')>=0)return 'On Track';return '';}
+function scPill(s){var n=scStatusNorm(s);var cls=n==='On Track'?'p-ot':n==='Behind'?'p-ar':n==='Off Track'?'p-up':'p-ns';return n?'<span class="pill '+cls+'">'+esc(n)+'</span>':'<span class="pill p-ns">—</span>';}
+function fmtKPI(v,unit){if(v===''||v==null)return '';if(typeof v==='string')return esc(v);unit=unit||'';if(unit.indexOf('%')>=0)return (Math.round(v*1000)/10)+'%';return ''+(Math.round(v*100)/100);}
+function numOrStr(v){v=(v==null?'':String(v)).trim();if(v==='')return '';var n=parseFloat(v);return (isNaN(n)||!/^-?\d*\.?\d+$/.test(v))?v:n;}
+var MONTHS_ABBR=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function qMonthIdx(qn){qn=parseInt(qn,10)||2;var s=(qn-1)*3;return [s,s+1,s+2];}
+function aggregate(vals,method){var nums=vals.filter(function(v){return typeof v==='number';});if(!nums.length)return '';if(method==='Sum')return Math.round(nums.reduce(function(a,b){return a+b;},0)*1000)/1000;if(method==='Latest'){var last='';vals.forEach(function(v){if(typeof v==='number')last=v;});return last;}return Math.round(nums.reduce(function(a,b){return a+b;},0)/nums.length*1000)/1000;}
+function defaultAgg(k){var u=(k.unit||'').toLowerCase();if(u==='#')return 'Sum';return 'Average';}
+function kpiAgg(k){return k.agg||defaultAgg(k);}
+function qHasMonths(k,qn){var idx=qMonthIdx(qn);return idx.some(function(i){return typeof (k.monthly&&k.monthly[i])==='number';});}
+function qActualVal(k,qn){var idx=qMonthIdx(qn);var vals=idx.map(function(i){return k.monthly?k.monthly[i]:'';});if(vals.some(function(v){return typeof v==='number';}))return aggregate(vals,kpiAgg(k));var q=k.q&&k.q[qn];return q?q.actual:'';}
+var _scOpen={},_scMonthly={};
+function scToggle(pi){var key='sc-'+pi;_scOpen[key]=_scOpen[key]===false?true:false;renderScorecard();}
+function scToggleMonthly(pi){_scMonthly[pi]=!_scMonthly[pi];renderScorecard();}
+function scQ(pi,ki,field,val){var k=WB.scorecard.people[pi].kpis[ki];var qn=activeQNum();k.q=k.q||{};k.q[qn]=k.q[qn]||{plan:'',actual:'',status:''};k.q[qn][field]=(field==='status')?val:numOrStr(val);save();renderScorecard();}
+function scK(pi,ki,field,val){WB.scorecard.people[pi].kpis[ki][field]=(val&&val.trim)?val.trim():val;save();renderScorecard();}
+function scM(pi,kind,ki,mi,val){var arr=kind==='kpi'?WB.scorecard.people[pi].kpis:WB.scorecard.people[pi].metrics;arr[ki].monthly[mi]=numOrStr(val);save();}
+function scMQ(pi,ki,mi,val){WB.scorecard.people[pi].kpis[ki].monthly[mi]=numOrStr(val);save();renderScorecard();}
+function scMet(pi,ki,mi,val){WB.scorecard.people[pi].metrics[ki].monthly[mi]=numOrStr(val);save();}
+function scP(pi,field,val){WB.scorecard.people[pi][field]=(val&&val.trim)?val.trim():val;save();}
+function addScPerson(){WB.scorecard.people.push({name:'New person',area:'',kpis:[],metrics:[]});save();renderScorecard();}
+function delScPerson(pi,e){if(e)e.stopPropagation();var pp=WB.scorecard.people[pi];confirmDelete('Remove person?','Remove “'+(pp?pp.name:'')+'” and all their KPIs from the scorecard?',function(){WB.scorecard.people.splice(pi,1);save();renderScorecard();});}
+function addScKpi(pi){WB.scorecard.people[pi].kpis.push({name:'New KPI',desc:'',unit:'',monthly:['','','','','','','','','','','',''],q:{},proof:''});save();renderScorecard();}
+function delScKpi(pi,ki){WB.scorecard.people[pi].kpis.splice(ki,1);save();renderScorecard();}
+function scMonthlyTable(pp,pi,kind,label){
+  var arr=kind==='kpi'?pp.kpis:pp.metrics;if(!arr||!arr.length)return '';
+  var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var h='<div class="card tablecard" style="margin:0 0 8px"><div class="mtitle">'+label+' — monthly actuals</div><table class="tbl"><thead><tr><th style="min-width:150px">'+label+'</th><th>Unit</th>'+MON.map(function(m){return '<th class="num">'+m+'</th>';}).join('')+'</tr></thead><tbody>';
+  arr.forEach(function(k,ki){
+    h+='<tr><td title="'+esc(k.desc||'')+'">'+esc(k.name)+'</td><td>'+esc(k.unit||'')+'</td>';
+    for(var mi=0;mi<12;mi++){h+='<td><input class="num" style="width:46px" value="'+esc(k.monthly[mi]==null?'':k.monthly[mi])+'" onchange="scM('+pi+',\''+kind+'\','+ki+','+mi+',this.value)"></td>';}
+    h+='</tr>';
+  });
+  h+='</tbody></table></div>';return h;
+}
+function renderScorecard(){
+  ensureScorecard();
+  var p=$('#panel-scorecard');var qn=activeQNum();
+  var people=WB.scorecard.people||[];var sel=getDashFilter('sc');
+  var h='<div class="filt"><span class="lbl">Showing quarter:</span><span class="tag">Q'+qn+'</span><span class="lbl" style="margin-left:12px">Person:</span><select id="filt-sc" onchange="setDashFilter(\'sc\',this.value)"><option value="">All individuals</option>'+people.map(function(pp){return '<option'+(sel===pp.name?' selected':'')+'>'+esc(pp.name)+'</option>';}).join('')+'</select><span class="spacer"></span><button class="btn sm" onclick="addScPerson()">'+ic2('plus')+'Add person</button></div>';
+  h+='<div class="hint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>Plan vs Actual follows the quarter chosen in the sidebar (currently Q'+qn+'). Switch quarters there to set/see other targets.</div>';
+  if(!people.length){h+=emptyState('gauge','No scorecard yet','Add a person to start tracking KPIs.');p.innerHTML=h;return;}
+  people.forEach(function(pp,pi){
+    if(sel&&sel!==pp.name)return;
+    var trackable=pp.kpis.filter(function(k){return k.q&&k.q[qn]&&scStatusNorm(k.q[qn].status);});
+    var onCount=trackable.filter(function(k){return scStatusNorm(k.q[qn].status)==='On Track';}).length;
+    var key='sc-'+pi;var open=_scOpen[key]!==false;
+    h+='<div class="dgrp'+(open?' open':'')+'"><div class="dgrp-hd" onclick="scToggle('+pi+')"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>';
+    h+='<span class="avatar">'+esc(initials(pp.name))+'</span><span class="ce nm" contenteditable onclick="event.stopPropagation()" onblur="scP('+pi+',\'name\',this.textContent)">'+esc(pp.name)+'</span>';
+    h+='<span class="tag" style="margin-left:8px">'+esc(pp.area||'—')+'</span>';
+    h+='<span class="ct">'+onCount+'/'+trackable.length+' KPIs on track · Q'+qn+'</span><span class="spacer"></span>';
+    h+='<button class="btn-del" onclick="delScPerson('+pi+',event)" title="Remove person">✕</button></div>';
+    var qi=qMonthIdx(qn);
+    h+='<div class="dgrp-bd"><div class="card tablecard" style="margin:0 0 8px"><table class="tbl"><thead><tr><th style="min-width:150px">KPI</th><th>Unit</th>'+qi.map(function(i){return '<th class="num">'+MONTHS_ABBR[i]+'</th>';}).join('')+'<th>Agg</th><th class="num">Plan</th><th class="num">Actual</th><th class="num">Var</th><th>Status</th><th>Proof</th><th></th></tr></thead><tbody>';
+    pp.kpis.forEach(function(k,ki){
+      var q=(k.q&&k.q[qn])||{plan:'',actual:'',status:''};
+      var hasMon=qHasMonths(k,qn);var actual=qActualVal(k,qn);
+      var varv='';if(typeof q.plan==='number'&&typeof actual==='number')varv=Math.round((actual-q.plan)*1000)/1000;
+      h+='<tr>';
+      h+='<td><span class="ce" contenteditable onblur="scK('+pi+','+ki+',\'name\',this.textContent)">'+esc(k.name)+'</span></td>';
+      h+='<td><input class="num" style="width:46px" value="'+esc(k.unit)+'" onchange="scK('+pi+','+ki+',\'unit\',this.value)"></td>';
+      qi.forEach(function(i){h+='<td><input class="num" style="width:44px" value="'+esc(k.monthly&&k.monthly[i]!=null?k.monthly[i]:'')+'" onchange="scMQ('+pi+','+ki+','+i+',this.value)"></td>';});
+      h+='<td><select onchange="scK('+pi+','+ki+',\'agg\',this.value)" title="How the months roll up into the quarter Actual">'+['Average','Sum','Latest'].map(function(a){return '<option'+(kpiAgg(k)===a?' selected':'')+'>'+a+'</option>';}).join('')+'</select></td>';
+      h+='<td><input class="num" style="width:56px" value="'+esc(q.plan)+'" onchange="scQ('+pi+','+ki+',\'plan\',this.value)"></td>';
+      h+='<td class="num">'+(hasMon?'<span class="autoval" title="auto: '+kpiAgg(k)+' of '+MONTHS_ABBR[qi[0]]+'–'+MONTHS_ABBR[qi[2]]+'">'+fmtKPI(actual,k.unit)+'</span>':'<input class="num" style="width:56px" value="'+esc(q.actual)+'" onchange="scQ('+pi+','+ki+',\'actual\',this.value)">')+'</td>';
+      h+='<td class="num">'+(varv===''?'':varv)+'</td>';
+      h+='<td><select onchange="scQ('+pi+','+ki+',\'status\',this.value)"><option value=""></option>'+['On Track','Behind','Off Track'].map(function(s){return '<option'+(scStatusNorm(q.status)===s?' selected':'')+'>'+s+'</option>';}).join('')+'</select></td>';
+      h+='<td>'+(k.proof?'<a href="'+esc(k.proof)+'" target="_blank" rel="noopener" class="prooflink" title="'+esc(k.proof)+'">link ↗</a> ':'')+'<input class="proofin" placeholder="paste URL" value="'+esc(k.proof||'')+'" onchange="scK('+pi+','+ki+',\'proof\',this.value)"></td>';
+      h+='<td><button class="btn-del" onclick="delScKpi('+pi+','+ki+')">✕</button></td></tr>';
+    });
+    h+='</tbody></table></div>';
+    if(pp.metrics&&pp.metrics.length){
+      h+='<div class="card tablecard" style="margin:0 0 8px"><div class="mtitle">Metrics — Q'+qn+'</div><table class="tbl"><thead><tr><th style="min-width:150px">Metric</th><th>Unit</th>'+qi.map(function(i){return '<th class="num">'+MONTHS_ABBR[i]+'</th>';}).join('')+'</tr></thead><tbody>';
+      pp.metrics.forEach(function(mk,mki){h+='<tr><td title="'+esc(mk.desc||'')+'">'+esc(mk.name)+'</td><td>'+esc(mk.unit||'')+'</td>'+qi.map(function(i){return '<td><input class="num" style="width:44px" value="'+esc(mk.monthly&&mk.monthly[i]!=null?mk.monthly[i]:'')+'" onchange="scMet('+pi+','+mki+','+i+',this.value)"></td>';}).join('')+'</tr>';});
+      h+='</tbody></table></div>';
+    }
+    h+='<div style="margin:0 0 8px;display:flex;gap:8px"><button class="btn sm" onclick="addScKpi('+pi+')">'+ic2('plus')+'Add KPI</button><button class="btn sm" onclick="scToggleMonthly('+pi+')">'+(_scMonthly[pi]?'Hide':'Show')+' full year</button></div>';
+    if(_scMonthly[pi]){h+=scMonthlyTable(pp,pi,'kpi','KPIs')+scMonthlyTable(pp,pi,'metric','Metrics');}
+    h+='</div></div>';
+  });
+  p.innerHTML=h;
+}
+function ovKpiSection(){
+  ensureScorecard();var qn=activeQNum();var people=WB.scorecard.people||[];
+  if(!people.length)return '';
+  var on=0,beh=0,off=0;
+  people.forEach(function(pp){pp.kpis.forEach(function(k){if(k.q&&k.q[qn]){var n=scStatusNorm(k.q[qn].status);if(n==='On Track')on++;else if(n==='Behind')beh++;else if(n==='Off Track')off++;}});});
+  var h='<div class="sec-head"><h2>Team KPIs — Q'+qn+'</h2><span class="sub">plan vs actual</span><span class="spacer"></span><button class="btn sm" onclick="switchTab(\'scorecard\')">Open scorecard</button></div>';
+  h+='<div class="stats" style="margin-bottom:14px"><div class="stat"><div class="n" style="color:var(--green)">'+on+'</div><div class="l"><span class="sw" style="background:var(--green)"></span>On Track</div></div><div class="stat"><div class="n" style="color:var(--amber)">'+beh+'</div><div class="l"><span class="sw" style="background:var(--amber)"></span>Behind</div></div><div class="stat"><div class="n" style="color:var(--red)">'+off+'</div><div class="l"><span class="sw" style="background:var(--red)"></span>Off Track</div></div></div>';
+  h+='<div class="card tablecard"><table class="tbl"><thead><tr><th>Person</th><th>Area</th><th>Primary KPI</th><th class="num">Plan</th><th class="num">Actual</th><th>Status</th></tr></thead><tbody>';
+  people.forEach(function(pp){
+    var k=pp.kpis.filter(function(x){return x.q&&x.q[qn];})[0]||pp.kpis[0];
+    var q=(k&&k.q)?k.q[qn]:null;
+    var av=k?qActualVal(k,qn):'';
+    h+='<tr><td>'+esc(pp.name)+'</td><td><span class="tag">'+esc(pp.area)+'</span></td><td>'+(k?esc(k.name):'—')+'</td><td class="num">'+(q?fmtKPI(q.plan,k.unit):'')+'</td><td class="num">'+(k?fmtKPI(av,k.unit):'')+'</td><td>'+(q?scPill(q.status):'<span class="pill p-ns">—</span>')+'</td></tr>';
+  });
+  h+='</tbody></table></div>';return h;
+}
+
+/* ============================================================
    OPERATIONS LOGS — 1% Better / Blockers / Support
    ============================================================ */
 function selOpts(arr,v){return arr.map(function(o){return '<option'+(v===o?' selected':'')+'>'+esc(o)+'</option>';}).join('');}
@@ -1341,7 +1464,9 @@ function boot(){
     if(res.ok&&rwb&&wbHasData(rwb)){setWB(rwb);setSync('ok');}      // remote has data -> canonical
     else if(res.ok){ if(!hadLocal)seed(); setSync('ok'); }           // empty backend -> local/demo only
     else { setSync('err'); }                                         // network error -> keep what we have
+    var scAdded=ensureScorecard();                                   // load team scorecard if backend has none yet
     renderQuarterSel();render(CUR);
+    if(scAdded&&res.ok)save();                                       // persist the imported scorecard once
   });
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
