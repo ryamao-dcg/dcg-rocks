@@ -63,7 +63,8 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--tx)}
 .brand{padding:20px 18px 14px;display:flex;flex-direction:column;align-items:flex-start;gap:8px}
 .brand .logo{width:30px;height:30px;border-radius:8px;background:var(--accent);color:#1E253E;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex:0 0 auto}
 .brand-logo{height:26px;width:auto;max-width:180px;display:block}
-.brand-row{display:flex;align-items:center;gap:9px}
+.brand-row{display:flex;align-items:center;gap:10px}
+.brand-mark{width:24px;height:24px;display:inline-flex;flex:0 0 auto}
 .brand-dot{width:11px;height:11px;border-radius:50%;background:var(--accent);flex:0 0 auto}
 .brand .bname{font-family:var(--serif);font-weight:600;font-size:17px;color:#fff;letter-spacing:-.01em;line-height:1.1}
 .brand .btag{font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--sb-tx2);font-weight:600}
@@ -164,6 +165,7 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--tx)}
 .pill{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;white-space:nowrap;font-family:var(--mono)}
 .p-ns{background:var(--surf3);color:var(--tx2)}
 .p-up{background:var(--red-bg);color:var(--red)}
+.p-cancel{background:var(--surf3);color:var(--tx3);text-decoration:line-through}
 .p-ot{background:var(--green-bg);color:var(--green-tx)}
 .p-ar{background:var(--amber-bg);color:var(--amber-tx)}
 .p-dn{background:var(--blue-bg);color:var(--blue-tx)}
@@ -172,6 +174,8 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--tx)}
 .tag{font-size:10.5px;font-family:var(--mono);padding:1px 6px;border-radius:5px;background:var(--surf3);color:var(--tx2)}
 .tag.over{background:var(--red-bg);color:var(--red)}
 .tag.soon{background:var(--amber-bg);color:var(--amber-tx)}
+.ministatus{font-size:11px;font-weight:600;font-family:var(--mono);border:1px solid var(--bdr);border-radius:20px;padding:2px 8px;cursor:pointer}
+.ministatus:focus{outline:none;border-color:var(--blue)}
 
 /* rock cards */
 .rocklist{display:flex;flex-direction:column;gap:9px}
@@ -463,7 +467,7 @@ var BAKED_SCORECARD={"people":[{"name":"Sean","area":"Talent Acquisition","kpis"
 var ROCK_TYPES=['ideation','talent','build','ops','ceo'];
 var ROCK_LABELS={ideation:'Ideation Rocks',talent:'Talent Rocks',build:'Build Rocks',ops:'Operations Rocks',ceo:'Office CEO Rocks'};
 var ROCK_ARR={ideation:'ideationRocks',talent:'talentRocks',build:'buildRocks',ops:'opsRocks',ceo:'ceoRocks'};
-var STATUSES=['Not Started','On Track','At Risk','Done'];
+var STATUSES=['Not Started','On Track','At Risk','Done','Cancelled'];
 var PORTCOS=['DCG','Wellnest','Portoro','Bloomwell','Immersiv','Ownershift','Cedar Brands','Calibright','MARO'];
 var BETTER_LEVELS=['Critical','High','Medium','Low'];
 var BETTER_STATUS=['Suggested','In Progress','Implemented'];
@@ -471,8 +475,8 @@ var BLOCK_STATUS=['Blocked','In Progress','Resolved'];
 var SUP_TYPES=['Intro','Decision','Budget','Resource','Other'];
 var SUP_STATUS=['Needed','In Progress','Resolved'];
 var NS_STATUS=['On Track','At Risk','Off Track'];
-var PILLCLS={Done:'p-dn','On Track':'p-ot','At Risk':'p-ar','Not Started':'p-ns','Unplanned':'p-up'};
-var SORTORD={'At Risk':0,'On Track':1,'Not Started':2,'Done':3,'Unplanned':4};
+var PILLCLS={Done:'p-dn','On Track':'p-ot','At Risk':'p-ar','Not Started':'p-ns','Unplanned':'p-up','Cancelled':'p-cancel'};
+var SORTORD={'At Risk':0,'On Track':1,'Not Started':2,'Done':3,'Unplanned':4,'Cancelled':5};
 
 /* ---- State (multi-quarter) ----
    WB = { activeQuarter, quarters:{ 'Q2 2026': <workbook>, ... } }
@@ -530,21 +534,23 @@ function daysUntil(s){if(!s)return null;var d=new Date(s+'T00:00:00');if(isNaN(d
 /* ---- Sub-rock / rock status logic (matches original roll-up) ---- */
 function rockStatus(rock){
   var subs=rock.subrocks||[];
-  if(!subs.length)return 'Unplanned';
-  var st=subs.map(function(s){return s.doneDate?'Done':(s.status||'Not Started');});
+  if(!subs.length)return rock.status||'Unplanned';
+  var st=subs.map(function(s){return s.doneDate?'Done':(s.status||'Not Started');}).filter(function(s){return s!=='Cancelled';});
+  if(!st.length)return 'Cancelled';
   if(st.every(function(s){return s==='Done';}))return 'Done';
   if(st.some(function(s){return s==='At Risk';}))return 'At Risk';
   if(st.some(function(s){return s==='On Track'||s==='Done';}))return 'On Track';
   return 'Not Started';
 }
 function rockPct(rock){
-  var subs=rock.subrocks||[];if(!subs.length)return 0;
+  var subs=(rock.subrocks||[]).filter(function(s){return subStatus(s)!=='Cancelled';});
+  if(!subs.length)return rock.status==='Done'?100:0;
   var done=subs.filter(function(s){return s.doneDate||s.status==='Done';}).length;
   return Math.round(done/subs.length*100);
 }
 function rockWeight(r){var w=parseFloat(r.weight);return (isNaN(w)||w<=0)?1:w;}
 function weightedPct(rocks){var tw=0,acc=0;rocks.forEach(function(r){var w=rockWeight(r);tw+=w;acc+=w*rockPct(r);});return tw?Math.round(acc/tw):0;}
-function completionBar(rocks){var p=weightedPct(rocks);return '<div class="compbar"><span class="comppct">'+p+'%</span><div class="prog"><span style="width:'+p+'%"></span></div><span class="compsub">weighted completion · '+rocks.length+' rocks</span></div>';}
+function completionBar(rocks){var rs=rocks.filter(function(r){return rockStatus(r)!=='Cancelled';});var p=weightedPct(rs);return '<div class="compbar"><span class="comppct">'+p+'%</span><div class="prog"><span style="width:'+p+'%"></span></div><span class="compsub">weighted completion · '+rs.length+' rocks</span></div>';}
 /* Owner suggestions: collected from every owner ever typed, across all quarters */
 function ownerList(){
   var s={};
@@ -705,7 +711,13 @@ function render(id){
   renderOwnerOptions();
   updateBadges();
 }
-function rerenderCurrent(){render(CUR);}
+function rerenderCurrent(){
+  var oc=document.querySelector('.rock.open');
+  var key=oc?oc.getAttribute('data-key'):null;
+  var before=oc?oc.getBoundingClientRect().top:0;
+  render(CUR);
+  if(key){var el=document.querySelector('.rock.open[data-key="'+key+'"]');if(el){window.scrollBy(0,Math.round(el.getBoundingClientRect().top-before));}}
+}
 function updateBadges(){
   var counts={};
   ROCK_TYPES.forEach(function(t){counts[t]=getRocks(t).length;});
@@ -749,8 +761,8 @@ function makeChart(id,cfg){
    ============================================================ */
 function renderOverview(){
   var p=$('#panel-overview');
-  var rocks=allRocks().map(function(x){return x.rock;});
-  var subs=allSubs();
+  var rocks=allRocks().map(function(x){return x.rock;}).filter(function(r){return rockStatus(r)!=='Cancelled';});
+  var subs=allSubs().filter(function(x){return subStatus(x.sub)!=='Cancelled';});
   var total=rocks.length;
   var c=statusCounts(rocks);
   var doneRocks=c.Done;
@@ -942,7 +954,7 @@ function rockCard(type,rock,idx,readonly){
   if(readonly)h+='<span class="owner">'+(rock.owner?esc(rock.owner):'<span style="color:var(--tx3)">unassigned</span>')+'</span>';
   else h+='<input class="ownin ownin-hd" list="owner-options" value="'+esc(rock.owner||'')+'" placeholder="owners (comma-separated)" title="Separate multiple owners with commas" onclick="event.stopPropagation()" onchange="rockSet(\''+type+'\',\''+rock.id+'\',\'owner\',this.value);rerenderCurrent()">';
   h+='<span class="spacer"></span>';
-  h+=chip(st);
+  h+=(!readonly&&!(rock.subrocks&&rock.subrocks.length))?statusSelectMini('setRockStatus(\''+type+'\',\''+rock.id+'\',this.value)',st,true):chip(st);
   h+='<div class="progwrap"><div class="prog"><span style="width:'+pct+'%"></span></div></div><span class="pct">'+pct+'%</span>';
   h+='<span class="wchip" title="Weight toward overall completion">w·'+rockWeight(rock)+'</span>';
   if(rock.score)h+='<span class="score" title="Q Score (set at quarter end)">'+esc(rock.score)+'</span>';
@@ -1084,6 +1096,12 @@ function delRock(type,id,e){
 /* ============================================================
    DASHBOARD — By Individual
    ============================================================ */
+function statusSelectMini(handler,cur,rockLevel){
+  var opts=['Not Started','On Track','At Risk','Done','Cancelled'];var cls=PILLCLS[cur]||(rockLevel?'p-up':'p-ns');
+  var blank=rockLevel?'Unplanned':'—';
+  return '<select class="ministatus '+cls+'" onclick="event.stopPropagation()" onchange="'+handler+'"><option value=""'+(!cur||cur==='Unplanned'?' selected':'')+'>'+blank+'</option>'+opts.map(function(s){return '<option'+(cur===s?' selected':'')+'>'+esc(s)+'</option>';}).join('')+'</select>';
+}
+function setRockStatus(type,id,v){var r=getRocks(type).find(function(x){return x.id===id;});if(r){r.status=v;save();render(CUR);}}
 function renderDashInd(){
   var p=$('#panel-dash-ind');
   var rby={},sby={};
@@ -1107,12 +1125,13 @@ function renderDashInd(){
     h+='<div style="width:120px"><div class="prog"><span style="width:'+pct+'%"></span></div></div></div>';
     h+='<div class="dgrp-bd"><div class="card" style="padding:4px 0">';
     rk.sort(function(a,b){return SORTORD[rockStatus(a.rock)]-SORTORD[rockStatus(b.rock)];}).forEach(function(x){
-      h+='<div class="drow"><span class="tag">Rock</span><div class="grow"><div>'+esc(x.rock.title||'(untitled)')+'</div><div class="rname">'+esc(ROCK_LABELS[x.type].replace(' Rocks',''))+' · '+rockPct(x.rock)+'% complete</div></div><span class="pct">'+rockPct(x.rock)+'%</span>'+chip(rockStatus(x.rock))+'</div>';
+      var rctrl=(x.rock.subrocks&&x.rock.subrocks.length)?chip(rockStatus(x.rock)):statusSelectMini('setRockStatus(\''+x.type+'\',\''+x.rock.id+'\',this.value)',rockStatus(x.rock),true);
+      h+='<div class="drow"><span class="tag">Rock</span><div class="grow"><div>'+esc(x.rock.title||'(untitled)')+'</div><div class="rname">'+esc(ROCK_LABELS[x.type].replace(' Rocks',''))+' · '+rockPct(x.rock)+'% complete</div></div><span class="pct">'+rockPct(x.rock)+'%</span>'+rctrl+'</div>';
     });
     sb.sort(function(a,b){return SORTORD[subStatus(a.sub)]-SORTORD[subStatus(b.sub)];}).forEach(function(x){
       var d=daysUntil(x.sub.targetDate);var tag='';
       if(subStatus(x.sub)!=='Done'&&d!==null){if(d<0)tag='<span class="tag over">'+(-d)+'d over</span>';else if(d<=14)tag='<span class="tag soon">in '+d+'d</span>';}
-      h+='<div class="drow"><span class="tag">Sub</span><div class="grow"><div>'+esc(x.sub.title||'(untitled)')+'</div><div class="rname">'+esc(x.rock.title||'')+(x.sub.portco?' · '+esc(x.sub.portco):'')+'</div></div>'+tag+chip(subStatus(x.sub))+'</div>';
+      h+='<div class="drow"><span class="tag">Sub</span><div class="grow"><div>'+esc(x.sub.title||'(untitled)')+'</div><div class="rname">'+esc(x.rock.title||'')+(x.sub.portco?' · '+esc(x.sub.portco):'')+'</div></div>'+tag+statusSelectMini('subSet(\''+x.type+'\',\''+x.rock.id+'\',\''+x.sub.id+'\',\'status\',this.value)',subStatus(x.sub))+'</div>';
     });
     if(!rk.length&&!sb.length)h+='<div class="empty" style="padding:14px">Nothing assigned.</div>';
     h+='</div></div></div>';
