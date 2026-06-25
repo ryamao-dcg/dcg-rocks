@@ -757,6 +757,8 @@ function renderOverview(){
   var subDone=subs.filter(function(x){return subStatus(x.sub)==='Done';}).length;
   var pctSub=subs.length?Math.round(subDone/subs.length*100):0;
   var wPct=weightedPct(rocks);
+  var twAll=0,twDone=0;rocks.forEach(function(r){var w=rockWeight(r);twAll+=w;if(rockStatus(r)==='Done')twDone+=w;});
+  var pctRocks=twAll?Math.round(twDone/twAll*100):0;
   var atRisk=c['At Risk'],unplanned=c.Unplanned;
 
   // due-date alerts
@@ -773,8 +775,8 @@ function renderOverview(){
 
   var html='';
   html+='<div class="kpis">';
-  html+=kpi('Rocks this quarter',total,total?(doneRocks+' done · '+atRisk+' at risk'):'No rocks yet');
-  html+=kpi('Quarter completion',wPct+'%',subDone+' of '+subs.length+' sub-rocks · weighted by rock','prog'+wPct);
+  html+=kpi('Rocks completed',pctRocks+'%',total+' rocks · '+doneRocks+' completed · '+atRisk+' at risk','prog'+pctRocks);
+  html+=kpi('Sub-rock completion',wPct+'%',subDone+' of '+subs.length+' sub-rocks · weighted','prog'+wPct);
   html+=kpi('Needs attention',(atRisk+unplanned),atRisk+' at risk · '+unplanned+' unplanned',null,(atRisk+unplanned)>0?'amber':'');
   html+=kpi('Open requests',(openBlockers+openSupport),openBlockers+' blockers · '+openSupport+' support',null,(openBlockers+openSupport)>0?'amber':'');
   html+='</div>';
