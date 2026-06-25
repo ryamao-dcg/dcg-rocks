@@ -582,13 +582,15 @@ function save(){
   clearTimeout(_saveTimer);
   _saveTimer=setTimeout(pushSupabase,800);
 }
-function pushSupabase(){
+function pushSupabase(opts){
+  opts=opts||{};
   fetch(SB_URL+'/rest/v1/'+SB_TABLE,{
-    method:'POST',
+    method:'POST',keepalive:!!opts.keepalive,
     headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},
     body:JSON.stringify({id:SB_ID,data:WB,updated_at:new Date().toISOString()})
   }).then(function(r){setSync(r.ok?'ok':'err');}).catch(function(){setSync('err');});
 }
+function flushSave(){if(_saveTimer){clearTimeout(_saveTimer);_saveTimer=null;if(SB_ENABLED)pushSupabase({keepalive:true});}}
 function loadSupabase(){
   /* returns {ok:true,data:obj|null} on success, {ok:false} on error */
   if(!SB_ENABLED)return Promise.resolve({ok:true,data:null});
@@ -1607,6 +1609,8 @@ function boot(){
   $('#scrim').onclick=function(){toggleSidebar(false);};
   $('#cf-ok').onclick=function(){if(_cfCb)_cfCb();_cfCb=null;closeModal('modal-confirm');};
   var st;$('#search').oninput=function(){clearTimeout(st);var v=this.value;st=setTimeout(function(){doSearch(v);},180);};
+  window.addEventListener('pagehide',flushSave);
+  document.addEventListener('visibilitychange',function(){if(document.visibilityState==='hidden')flushSave();});
   document.addEventListener('keydown',function(e){if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();$('#search').focus();}if(e.key==='Escape'){$('#search').value='';if(CUR==='__search')switchTab('overview');closeModal('modal-settings');closeModal('modal-confirm');}});
 
   // load local cache first (migrates legacy single-workbook format into a quarter)
