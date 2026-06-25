@@ -568,7 +568,7 @@ function subStatus(s){return s.doneDate?'Done':(s.status||'Not Started');}
 /* ============================================================
    Persistence — localStorage immediate + Supabase debounced
    ============================================================ */
-var _saveTimer=null,_booted=false;
+var _saveTimer=null,_booted=false,_lastRemoteSig=null;
 function setSync(state,msg){
   var n=$('#sync');if(!n)return;n.className='sync'+(state==='err'?' err':state==='load'?' load':'');
   $('#sync-txt').textContent=msg||(state==='err'?'Sync error':state==='load'?'Saving…':'Saved');
@@ -676,6 +676,7 @@ function pushMergedSave(){
     }
     try{localStorage.setItem(STORE,JSON.stringify(WB));}catch(e){}
     pushSupabase();
+    _lastRemoteSig=JSON.stringify(WB);
     if(!isEditing()){renderQuarterSel();render(CUR);}
   });
 }
@@ -1694,13 +1695,15 @@ function boot(){
   setInterval(function(){
     if(!SB_ENABLED||_saveTimer||isEditing())return;
     loadSupabase().then(function(res){
-      if(!res.ok||!res.data)return;var remote=toWB(res.data);
+      if(!res.ok||!res.data)return;
+      var sig=JSON.stringify(res.data);if(sig===_lastRemoteSig)return;_lastRemoteSig=sig;
+      var remote=toWB(res.data);
       if(remote&&remote.quarters&&Object.keys(remote.quarters).length){
         try{WB=mergeWB(WB,remote);setActiveQuarter(WB.quarters[WB.activeQuarter]?WB.activeQuarter:Object.keys(WB.quarters)[0]);}catch(e){return;}
         if(!isEditing()){renderQuarterSel();render(CUR);setSync('ok');}
       }
     });
-  },30000);
+  },4000);
   document.addEventListener('keydown',function(e){if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();$('#search').focus();}if(e.key==='Escape'){$('#search').value='';if(CUR==='__search')switchTab('overview');closeModal('modal-settings');closeModal('modal-confirm');}});
 
   // load local cache first (migrates legacy single-workbook format into a quarter)
@@ -1720,6 +1723,7 @@ function boot(){
     if(res.ok&&rwb&&wbHasData(rwb)){setWB(rwb);setSync('ok');}      // remote has data -> canonical
     else if(res.ok){ if(!hadLocal)seed(); setSync('ok'); }           // empty backend -> local/demo only
     else { setSync('err'); }                                         // network error -> keep what we have
+    if(res.ok&&res.data)_lastRemoteSig=JSON.stringify(res.data);     // baseline for live polling
     var scAdded=ensureScorecard();                                   // load team scorecard if backend has none yet
     var bAdded=importBuildRocksQ2();                                 // one-time append of Build Q2 rocks from ClickUp
     renderQuarterSel();render(CUR);
