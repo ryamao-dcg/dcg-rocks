@@ -479,7 +479,7 @@ function toWB(raw){
   if(!raw||typeof raw!=='object')return null;
   if(raw.quarters&&typeof raw.quarters==='object'&&Object.keys(raw.quarters).length){
     var aq=raw.activeQuarter&&raw.quarters[raw.activeQuarter]?raw.activeQuarter:Object.keys(raw.quarters)[0];
-    return {activeQuarter:aq,quarters:raw.quarters,_v:raw._v};
+    return {activeQuarter:aq,quarters:raw.quarters,_v:raw._v,scorecard:raw.scorecard};
   }
   if(raw.ns||raw.ideationRocks||raw.buildRocks||raw.talentRocks||raw.opsRocks||raw.ceoRocks){
     var q=raw.quarter||'Q2 2026';var bw=blankWorkbook(q,raw.qStart||'2026-04-03');
@@ -488,7 +488,7 @@ function toWB(raw){
   }
   return null;
 }
-function setWB(wb){if(!wb||!wb.quarters||!Object.keys(wb.quarters).length)return false;WB={activeQuarter:wb.activeQuarter,quarters:wb.quarters,_v:wb._v};var aq=wb.activeQuarter&&wb.quarters[wb.activeQuarter]?wb.activeQuarter:Object.keys(wb.quarters)[0];setActiveQuarter(aq);return true;}
+function setWB(wb){if(!wb||!wb.quarters||!Object.keys(wb.quarters).length)return false;WB={activeQuarter:wb.activeQuarter,quarters:wb.quarters,_v:wb._v,scorecard:wb.scorecard};var aq=wb.activeQuarter&&wb.quarters[wb.activeQuarter]?wb.activeQuarter:Object.keys(wb.quarters)[0];setActiveQuarter(aq);return true;}
 
 /* ---- Helpers ---- */
 function uid(){return '_'+Math.random().toString(36).substr(2,9);}
