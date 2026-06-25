@@ -580,7 +580,7 @@ function save(){
   if(!SB_ENABLED)return;
   setSync('load');
   clearTimeout(_saveTimer);
-  _saveTimer=setTimeout(pushSupabase,800);
+  _saveTimer=setTimeout(function(){_saveTimer=null;pushMergedSave();},800);
 }
 function pushSupabase(opts){
   opts=opts||{};
@@ -598,6 +598,86 @@ function loadSupabase(){
     headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}
   }).then(function(r){if(!r.ok)return {ok:false};return r.json().then(function(j){return {ok:true,data:(j&&j[0]&&j[0].data)?j[0].data:null};});})
     .catch(function(){return {ok:false};});
+}
+/* ============================================================
+   Concurrent-edit safety: merge local with latest remote before
+   pushing, so teammates' additions are never overwritten.
+   Strategy: union lists by id (local wins on items it holds),
+   recurse into sub-rocks & comments, union id-less lists (logs)
+   distinctly. Deletes do not propagate (re-delete if needed).
+   ============================================================ */
+function isEditing(){var a=document&&document.activeElement;return !!(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName));}
+function mergeById(local,remote){
+  var map={},order=[];
+  (remote||[]).forEach(function(it){if(it&&it.id){map[it.id]=it;order.push(it.id);}});
+  (local||[]).forEach(function(it){if(it&&it.id){if(!(it.id in map))order.push(it.id);map[it.id]=it;}});
+  return order.map(function(id){return map[id];});
+}
+function mergeFlat(local,remote){
+  var map={},order=[],seen={};
+  function take(it,isLocal){
+    if(it&&it.id){if(!(it.id in map))order.push('#'+it.id);if(isLocal||!(it.id in map))map[it.id]=it;}
+    else{var k=JSON.stringify(it);if(!seen[k]){seen[k]=1;order.push('$'+k);map['$'+k]=it;}}
+  }
+  (remote||[]).forEach(function(it){take(it,false);});
+  (local||[]).forEach(function(it){take(it,true);});
+  return order.map(function(t){return t.charAt(0)==='#'?map[t.slice(1)]:map[t];});
+}
+function mergeByKey(local,remote,key){
+  var map={},order=[];
+  (remote||[]).forEach(function(it){var k=it&&it[key];if(k!=null){if(!(k in map))order.push(k);map[k]=it;}});
+  (local||[]).forEach(function(it){var k=it&&it[key];if(k!=null){if(!(k in map))order.push(k);map[k]=it;}});
+  return order.map(function(k){return map[k];});
+}
+function mergeRocks(local,remote){
+  var loc={};(local||[]).forEach(function(r){if(r&&r.id)loc[r.id]=r;});
+  var rem={};(remote||[]).forEach(function(r){if(r&&r.id)rem[r.id]=r;});
+  var order=[],seen={};
+  (remote||[]).forEach(function(r){if(r&&r.id&&!seen[r.id]){seen[r.id]=1;order.push(r.id);}});
+  (local||[]).forEach(function(r){if(r&&r.id&&!seen[r.id]){seen[r.id]=1;order.push(r.id);}});
+  return order.map(function(id){
+    var l=loc[id],r=rem[id];
+    if(l&&r){var m=Object.assign({},l);m.subrocks=mergeById(l.subrocks||[],r.subrocks||[]);m.comments=mergeFlat(l.comments||[],r.comments||[]);return m;}
+    return l||r;
+  });
+}
+function mergeQuarter(l,r){
+  var o={quarter:l.quarter||r.quarter,qStart:l.qStart||r.qStart};
+  ['ideationRocks','talentRocks','buildRocks','opsRocks','ceoRocks'].forEach(function(k){o[k]=mergeRocks(l[k]||[],r[k]||[]);});
+  ['better','blockers','support'].forEach(function(k){o[k]=mergeFlat(l[k]||[],r[k]||[]);});
+  o.ns=mergeByKey(l.ns||[],r.ns||[],'metric');
+  ['expanded','srTab','arCollapsed','indCollapsed','portcoCollapsed','activeFilter'].forEach(function(k){o[k]=l[k]||r[k]||{};});
+  return ensureWB(o);
+}
+function mergeScorecard(l,r){
+  if(!l)return r;if(!r)return l;
+  var map={},order=[];
+  (r.people||[]).forEach(function(p){var k=p.name;if(!(k in map))order.push(k);map[k]={r:p};});
+  (l.people||[]).forEach(function(p){var k=p.name;if(!(k in map)){order.push(k);map[k]={l:p};}else map[k].l=p;});
+  var people=order.map(function(k){var e=map[k];if(e.l&&e.r){var m=Object.assign({},e.l);m.kpis=mergeByKey(e.l.kpis||[],e.r.kpis||[],'name');m.metrics=mergeByKey(e.l.metrics||[],e.r.metrics||[],'name');return m;}return e.l||e.r;});
+  return {people:people};
+}
+function mergeWB(local,remote){
+  var out={activeQuarter:local.activeQuarter,_v:DATA_VERSION,scorecard:mergeScorecard(local.scorecard,remote.scorecard),quarters:{}};
+  var keys={};Object.keys(remote.quarters||{}).forEach(function(k){keys[k]=1;});Object.keys(local.quarters||{}).forEach(function(k){keys[k]=1;});
+  Object.keys(keys).forEach(function(q){var lq=(local.quarters||{})[q],rq=(remote.quarters||{})[q];out.quarters[q]=(!lq)?rq:(!rq)?lq:mergeQuarter(lq,rq);});
+  if(!out.quarters[out.activeQuarter])out.activeQuarter=Object.keys(out.quarters)[0];
+  return out;
+}
+function pushMergedSave(){
+  if(!SB_ENABLED)return;
+  setSync('load');
+  loadSupabase().then(function(res){
+    if(res.ok&&res.data){
+      var remote=toWB(res.data);
+      if(remote&&remote.quarters&&Object.keys(remote.quarters).length){
+        try{WB=mergeWB(WB,remote);setActiveQuarter(WB.quarters[WB.activeQuarter]?WB.activeQuarter:Object.keys(WB.quarters)[0]);}catch(e){}
+      }
+    }
+    try{localStorage.setItem(STORE,JSON.stringify(WB));}catch(e){}
+    pushSupabase();
+    if(!isEditing()){renderQuarterSel();render(CUR);}
+  });
 }
 
 /* ============================================================
@@ -1393,7 +1473,7 @@ function renderBetter(){
 function addBetter(){
   var v=function(id){return ($('#'+id)||{}).value||'';};
   if(!v('b-area').trim()&&!v('b-what').trim())return;
-  D.better.push({area:v('b-area').trim(),who:v('b-who').trim(),what:v('b-what').trim(),impact:v('b-impact').trim(),level:v('b-level'),status:v('b-status')});
+  D.better.push({id:uid(),area:v('b-area').trim(),who:v('b-who').trim(),what:v('b-what').trim(),impact:v('b-impact').trim(),level:v('b-level'),status:v('b-status')});
   save();renderBetter();updateBadges();
 }
 
@@ -1417,7 +1497,7 @@ function renderBlockers(){
 function addBlocker(){
   var v=function(id){return ($('#'+id)||{}).value||'';};
   if(!v('bl-rock').trim()&&!v('bl-desc').trim())return;
-  D.blockers.push({rock:v('bl-rock').trim(),who:v('bl-who').trim(),from:v('bl-from').trim(),desc:v('bl-desc').trim(),support:v('bl-support').trim(),status:v('bl-status'),notes:v('bl-notes').trim()});
+  D.blockers.push({id:uid(),rock:v('bl-rock').trim(),who:v('bl-who').trim(),from:v('bl-from').trim(),desc:v('bl-desc').trim(),support:v('bl-support').trim(),status:v('bl-status'),notes:v('bl-notes').trim()});
   save();renderBlockers();updateBadges();
 }
 
@@ -1440,7 +1520,7 @@ function renderSupport(){
 function addSupport(){
   var v=function(id){return ($('#'+id)||{}).value||'';};
   if(!v('sp-init').trim()&&!v('sp-desc').trim())return;
-  D.support.push({type:v('sp-type'),init:v('sp-init').trim(),by:v('sp-by').trim(),from:v('sp-from').trim(),desc:v('sp-desc').trim(),time:v('sp-time').trim(),status:v('sp-status')});
+  D.support.push({id:uid(),type:v('sp-type'),init:v('sp-init').trim(),by:v('sp-by').trim(),from:v('sp-from').trim(),desc:v('sp-desc').trim(),time:v('sp-time').trim(),status:v('sp-status')});
   save();renderSupport();updateBadges();
 }
 function toggleAdd(which){var f=$('#add-'+which);if(f)f.classList.toggle('on');}
@@ -1611,6 +1691,16 @@ function boot(){
   var st;$('#search').oninput=function(){clearTimeout(st);var v=this.value;st=setTimeout(function(){doSearch(v);},180);};
   window.addEventListener('pagehide',flushSave);
   document.addEventListener('visibilitychange',function(){if(document.visibilityState==='hidden')flushSave();});
+  setInterval(function(){
+    if(!SB_ENABLED||_saveTimer||isEditing())return;
+    loadSupabase().then(function(res){
+      if(!res.ok||!res.data)return;var remote=toWB(res.data);
+      if(remote&&remote.quarters&&Object.keys(remote.quarters).length){
+        try{WB=mergeWB(WB,remote);setActiveQuarter(WB.quarters[WB.activeQuarter]?WB.activeQuarter:Object.keys(WB.quarters)[0]);}catch(e){return;}
+        if(!isEditing()){renderQuarterSel();render(CUR);setSync('ok');}
+      }
+    });
+  },30000);
   document.addEventListener('keydown',function(e){if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();$('#search').focus();}if(e.key==='Escape'){$('#search').value='';if(CUR==='__search')switchTab('overview');closeModal('modal-settings');closeModal('modal-confirm');}});
 
   // load local cache first (migrates legacy single-workbook format into a quarter)
