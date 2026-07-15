@@ -174,6 +174,9 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--tx)}
 .tag{font-size:10.5px;font-family:var(--mono);padding:1px 6px;border-radius:5px;background:var(--surf3);color:var(--tx2)}
 .tag.over{background:var(--red-bg);color:var(--red)}
 .tag.soon{background:var(--amber-bg);color:var(--amber-tx)}
+.todoin{background:transparent;border:1px solid transparent;border-radius:6px;padding:4px 6px;font-size:13px;color:var(--tx);width:100%;font-family:var(--font)}
+.todoin:hover{border-color:var(--bdr)}
+.todoin:focus{outline:none;border-color:var(--blue);background:var(--surf)}
 .ministatus{font-size:11px;font-weight:600;font-family:var(--mono);border:1px solid var(--bdr);border-radius:20px;padding:2px 8px;cursor:pointer}
 .ministatus:focus{outline:none;border-color:var(--blue)}
 
@@ -497,7 +500,7 @@ function toWB(raw){
   if(!raw||typeof raw!=='object')return null;
   if(raw.quarters&&typeof raw.quarters==='object'&&Object.keys(raw.quarters).length){
     var aq=raw.activeQuarter&&raw.quarters[raw.activeQuarter]?raw.activeQuarter:Object.keys(raw.quarters)[0];
-    return {activeQuarter:aq,quarters:raw.quarters,_v:raw._v,scorecard:raw.scorecard};
+    return {activeQuarter:aq,quarters:raw.quarters,_v:raw._v,scorecard:raw.scorecard,todos:raw.todos,deleted:raw.deleted};
   }
   if(raw.ns||raw.ideationRocks||raw.buildRocks||raw.talentRocks||raw.opsRocks||raw.ceoRocks){
     var q=raw.quarter||'Q2 2026';var bw=blankWorkbook(q,raw.qStart||'2026-04-03');
@@ -506,7 +509,7 @@ function toWB(raw){
   }
   return null;
 }
-function setWB(wb){if(!wb||!wb.quarters||!Object.keys(wb.quarters).length)return false;WB={activeQuarter:wb.activeQuarter,quarters:wb.quarters,_v:wb._v,scorecard:wb.scorecard};var aq=wb.activeQuarter&&wb.quarters[wb.activeQuarter]?wb.activeQuarter:Object.keys(wb.quarters)[0];setActiveQuarter(aq);return true;}
+function setWB(wb){if(!wb||!wb.quarters||!Object.keys(wb.quarters).length)return false;WB={activeQuarter:wb.activeQuarter,quarters:wb.quarters,_v:wb._v,scorecard:wb.scorecard,todos:wb.todos,deleted:wb.deleted||[]};var aq=wb.activeQuarter&&wb.quarters[wb.activeQuarter]?wb.activeQuarter:Object.keys(wb.quarters)[0];setActiveQuarter(aq);return true;}
 
 /* ---- Helpers ---- */
 function uid(){return '_'+Math.random().toString(36).substr(2,9);}
@@ -606,7 +609,7 @@ function loadSupabase(){
    recurse into sub-rocks & comments, union id-less lists (logs)
    distinctly. Deletes do not propagate (re-delete if needed).
    ============================================================ */
-function isEditing(){var a=document&&document.activeElement;return !!(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName));}
+function isEditing(){var a=document&&document.activeElement;return !!(a&&(/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)||a.isContentEditable));}
 function mergeById(local,remote){
   var map={},order=[];
   (remote||[]).forEach(function(it){if(it&&it.id){map[it.id]=it;order.push(it.id);}});
@@ -657,12 +660,27 @@ function mergeScorecard(l,r){
   var people=order.map(function(k){var e=map[k];if(e.l&&e.r){var m=Object.assign({},e.l);m.kpis=mergeByKey(e.l.kpis||[],e.r.kpis||[],'name');m.metrics=mergeByKey(e.l.metrics||[],e.r.metrics||[],'name');return m;}return e.l||e.r;});
   return {people:people};
 }
+function tomb(id){if(!id)return;WB.deleted=WB.deleted||[];if(WB.deleted.indexOf(id)<0)WB.deleted.push(id);}
+function mergeDeleted(a,b){var s={};(a||[]).forEach(function(x){s[x]=1;});(b||[]).forEach(function(x){s[x]=1;});return Object.keys(s);}
+function pruneDeleted(wb){
+  var del={};(wb.deleted||[]).forEach(function(id){del[id]=1;});
+  if(!Object.keys(del).length)return wb;
+  Object.keys(wb.quarters||{}).forEach(function(qk){var q=wb.quarters[qk];
+    ['ideationRocks','talentRocks','buildRocks','opsRocks','ceoRocks'].forEach(function(k){
+      q[k]=(q[k]||[]).filter(function(r){return !del[r.id];});
+      q[k].forEach(function(r){r.subrocks=(r.subrocks||[]).filter(function(s){return !del[s.id];});r.comments=(r.comments||[]).filter(function(c){return !del[c.id];});});
+    });
+    ['better','blockers','support'].forEach(function(k){q[k]=(q[k]||[]).filter(function(x){return !(x.id&&del[x.id]);});});
+  });
+  wb.todos=(wb.todos||[]).filter(function(t){return !del[t.id];});
+  return wb;
+}
 function mergeWB(local,remote){
-  var out={activeQuarter:local.activeQuarter,_v:DATA_VERSION,scorecard:mergeScorecard(local.scorecard,remote.scorecard),quarters:{}};
+  var out={activeQuarter:local.activeQuarter,_v:DATA_VERSION,scorecard:mergeScorecard(local.scorecard,remote.scorecard),todos:mergeFlat(local.todos||[],remote.todos||[]),deleted:mergeDeleted(local.deleted,remote.deleted),quarters:{}};
   var keys={};Object.keys(remote.quarters||{}).forEach(function(k){keys[k]=1;});Object.keys(local.quarters||{}).forEach(function(k){keys[k]=1;});
   Object.keys(keys).forEach(function(q){var lq=(local.quarters||{})[q],rq=(remote.quarters||{})[q];out.quarters[q]=(!lq)?rq:(!rq)?lq:mergeQuarter(lq,rq);});
   if(!out.quarters[out.activeQuarter])out.activeQuarter=Object.keys(out.quarters)[0];
-  return out;
+  return pruneDeleted(out);
 }
 function pushMergedSave(){
   if(!SB_ENABLED)return;
@@ -694,7 +712,9 @@ var ICONS={
   spark:'<path d="M13 2 3 14h9l-1 8 10-12h-9z"/>',
   block:'<circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/>',
   hand:'<path d="M18 11V6a2 2 0 0 0-4 0M14 10V4a2 2 0 0 0-4 0v2M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>',
-  gauge:'<path d="M12 14l3.5-3.5"/><path d="M3.05 13a9 9 0 1 1 17.9 0"/><circle cx="12" cy="14" r="1.5"/>'
+  gauge:'<path d="M12 14l3.5-3.5"/><path d="M3.05 13a9 9 0 1 1 17.9 0"/><circle cx="12" cy="14" r="1.5"/>',
+  cal:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+  todo:'<path d="M11 6h10M11 12h10M11 18h10"/><path d="m3 6 1.2 1.2L6.5 5"/><path d="m3 12 1.2 1.2L6.5 11"/><path d="m3 18 1.2 1.2L6.5 17"/>'
 };
 function ic(k){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+(ICONS[k]||'')+'</svg>';}
 
@@ -717,6 +737,10 @@ var NAV=[
     {id:'allkpis',label:'All KPIs',icon:'gauge'},
     {id:'scorecard',label:'By Person',icon:'user'}
   ]},
+  {grp:'Weekly',items:[
+    {id:'thisweek',label:'This Week',icon:'cal'},
+    {id:'todos',label:'To-Dos',icon:'todo'}
+  ]},
   {grp:'Operations',items:[
     {id:'better',label:'1% Better',icon:'spark'},
     {id:'blockers',label:'Blockers',icon:'block'},
@@ -736,6 +760,8 @@ var PAGE_META={
   'dash-portco':['By PortCo','Sub-Rocks grouped by portfolio company'],
   allkpis:['All KPIs','Every KPI across the team, grouped by area'],
   scorecard:['KPIs by Person','Quarterly Plan vs Actual, per person'],
+  thisweek:['This Week','To-dos and sub-rocks due this week'],
+  todos:['Weekly To-Dos','Each person’s weekly tasks'],
   better:['1% Better','Small improvements compound to 37x by year end'],
   blockers:['Blockers','Log anything stopping a Rock'],
   support:['Support Needed','What does the team need from leadership?']
@@ -756,7 +782,7 @@ function buildNav(){
 }
 function buildPanels(){
   var c=$('#content');
-  var ids=['overview','northstar','allrocks','ideation','talent','build','ops','ceo','dash-ind','dash-portco','allkpis','scorecard','better','blockers','support'];
+  var ids=['overview','northstar','allrocks','ideation','talent','build','ops','ceo','dash-ind','dash-portco','allkpis','scorecard','thisweek','todos','better','blockers','support'];
   c.innerHTML=ids.map(function(id){return '<section class="panel" id="panel-'+id+'"></section>';}).join('');
 }
 var CUR='overview';
@@ -786,6 +812,8 @@ function render(id){
   else if(ROCK_PANELS[id])renderRockPanel(id);
   else if(id==='dash-ind')renderDashInd();
   else if(id==='dash-portco')renderDashPortco();
+  else if(id==='thisweek')renderThisWeek();
+  else if(id==='todos')renderTodos();
   else if(id==='allkpis')renderAllKpis();
   else if(id==='scorecard')renderScorecard();
   else if(id==='better')renderBetter();
@@ -1046,10 +1074,11 @@ function rockCard(type,rock,idx,readonly){
   if(!readonly){
     h+='<div class="rock-bd">';
     h+=rockMeta(type,rock);
-    var tab=D.srTab[key]||'subs';var nC=(rock.comments||[]).length;
-    h+='<div class="subtabs"><button class="'+(tab==='subs'?'on':'')+'" onclick="srTab(\''+key+'\',\'subs\')">Sub-Rocks</button><button class="'+(tab==='ms'?'on':'')+'" onclick="srTab(\''+key+'\',\'ms\')">Week-by-Week</button><button class="'+(tab==='comments'?'on':'')+'" onclick="srTab(\''+key+'\',\'comments\')">Comments'+(nC?' ('+nC+')':'')+'</button></div>';
+    var tab=D.srTab[key]||'subs';var nC=(rock.comments||[]).length;var nT=(WB.todos||[]).filter(function(t){return t.rockId===rock.id;}).length;
+    h+='<div class="subtabs"><button class="'+(tab==='subs'?'on':'')+'" onclick="srTab(\''+key+'\',\'subs\')">Sub-Rocks</button><button class="'+(tab==='ms'?'on':'')+'" onclick="srTab(\''+key+'\',\'ms\')">Week-by-Week</button><button class="'+(tab==='todos'?'on':'')+'" onclick="srTab(\''+key+'\',\'todos\')">To-Dos'+(nT?' ('+nT+')':'')+'</button><button class="'+(tab==='comments'?'on':'')+'" onclick="srTab(\''+key+'\',\'comments\')">Comments'+(nC?' ('+nC+')':'')+'</button></div>';
     h+='<div class="subpane'+(tab==='subs'?' on':'')+'">'+subrocksTab(type,rock)+'</div>';
     h+='<div class="subpane'+(tab==='ms'?' on':'')+'">'+milestonesTab(type,rock)+'</div>';
+    h+='<div class="subpane'+(tab==='todos'?' on':'')+'">'+todosTab(type,rock)+'</div>';
     h+='<div class="subpane'+(tab==='comments'?' on':'')+'">'+commentsTab(type,rock)+'</div>';
     h+='</div>';
   }
@@ -1083,7 +1112,7 @@ function addComment(type,rid){
   r.comments.push({id:uid(),who:w?w.value.trim():'',text:txt,ts:new Date().toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'})});
   save();rerenderCurrent();
 }
-function delComment(type,rid,cid){var r=getRocks(type).find(function(x){return x.id===rid;});if(r){r.comments=(r.comments||[]).filter(function(c){return c.id!==cid;});save();rerenderCurrent();}}
+function delComment(type,rid,cid){var r=getRocks(type).find(function(x){return x.id===rid;});if(r){tomb(cid);r.comments=(r.comments||[]).filter(function(c){return c.id!==cid;});save();rerenderCurrent();}}
 
 /* ---- Sub-Rocks tab ---- */
 function portcoOpts(v){return '<option value=""'+(!v?' selected':'')+'>—</option>'+PORTCOS.map(function(p){return '<option'+(v===p?' selected':'')+'>'+esc(p)+'</option>';}).join('');}
@@ -1115,9 +1144,9 @@ function addSub(type,rid){
   save();rerenderCurrent();
 }
 function findSub(type,rid,sid){var r=getRocks(type).find(function(x){return x.id===rid;});if(!r)return null;return (r.subrocks||[]).find(function(s){return s.id===sid;});}
-function subSet(type,rid,sid,k,v){var s=findSub(type,rid,sid);if(!s)return;s[k]=v.trim?v.trim():v;if(k==='status'&&s[k]==='Done'&&!s.doneDate){var t=new Date();s.doneDate=t.getFullYear()+'-'+('0'+(t.getMonth()+1)).slice(-2)+'-'+('0'+t.getDate()).slice(-2);}save();rerenderCurrent();}
-function subDone(type,rid,sid,v){var s=findSub(type,rid,sid);if(!s)return;s.doneDate=v;if(v)s.status='Done';else if(s.status==='Done')s.status='On Track';save();rerenderCurrent();}
-function delSub(type,rid,sid){var r=getRocks(type).find(function(x){return x.id===rid;});r.subrocks=r.subrocks.filter(function(s){return s.id!==sid;});save();rerenderCurrent();}
+function subSet(type,rid,sid,k,v){var s=findSub(type,rid,sid);if(!s)return;s[k]=v.trim?v.trim():v;if(k==='status'){if(s.status==='Done'&&!s.doneDate){var t=new Date();s.doneDate=t.getFullYear()+'-'+('0'+(t.getMonth()+1)).slice(-2)+'-'+('0'+t.getDate()).slice(-2);}else if(s.status!=='Done'){s.doneDate='';}}if(s.todoId)pushSubToTodo(s);save();rerenderCurrent();}
+function subDone(type,rid,sid,v){var s=findSub(type,rid,sid);if(!s)return;s.doneDate=v;if(v)s.status='Done';else if(s.status==='Done')s.status='On Track';if(s.todoId)pushSubToTodo(s);save();rerenderCurrent();}
+function delSub(type,rid,sid){var r=getRocks(type).find(function(x){return x.id===rid;});var s=(r.subrocks||[]).find(function(x){return x.id===sid;});if(s&&s.todoId){var t=(WB.todos||[]).find(function(x){return x.id===s.todoId;});if(t){t.subId='';t.rockId='';}}tomb(sid);r.subrocks=r.subrocks.filter(function(x){return x.id!==sid;});save();rerenderCurrent();}
 
 /* ---- Week-by-Week milestones grid ---- */
 function milestonesTab(type,rock){
@@ -1149,8 +1178,8 @@ function milestonesTab(type,rock){
   return h;
 }
 function isoOf(i){var d=weekDates()[i];return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
-function msClick(type,rid,sid,i,e){if(e&&e.shiftKey){return msTarget(type,rid,sid,i,e);}var s=findSub(type,rid,sid);if(!s)return;var iso=isoOf(i);if(s.doneDate===iso){s.doneDate='';if(s.status==='Done')s.status='On Track';}else{s.doneDate=iso;s.status='Done';}save();rerenderCurrent();}
-function msTarget(type,rid,sid,i,e){if(e)e.preventDefault();var s=findSub(type,rid,sid);if(!s)return;s.targetDate=isoOf(i);save();rerenderCurrent();return false;}
+function msClick(type,rid,sid,i,e){if(e&&e.shiftKey){return msTarget(type,rid,sid,i,e);}var s=findSub(type,rid,sid);if(!s)return;var iso=isoOf(i);if(s.doneDate===iso){s.doneDate='';if(s.status==='Done')s.status='On Track';}else{s.doneDate=iso;s.status='Done';}if(s.todoId)pushSubToTodo(s);save();rerenderCurrent();}
+function msTarget(type,rid,sid,i,e){if(e)e.preventDefault();var s=findSub(type,rid,sid);if(!s)return;s.targetDate=isoOf(i);if(s.todoId)pushSubToTodo(s);save();rerenderCurrent();return false;}
 
 /* ---- Add Rock form ---- */
 function showAddRock(type){
@@ -1171,7 +1200,7 @@ function delRock(type,id,e){
   if(e)e.stopPropagation();
   var r=getRocks(type).find(function(x){return x.id===id;});
   confirmDelete('Delete Rock?','This will permanently delete “'+(r?r.title:'this rock')+'” and all its sub-rocks. This cannot be undone.',function(){
-    D[ROCK_ARR[type]]=getRocks(type).filter(function(x){return x.id!==id;});
+    tomb(id);D[ROCK_ARR[type]]=getRocks(type).filter(function(x){return x.id!==id;});
     save();render(CUR);updateBadges();
   });
 }
@@ -1271,13 +1300,125 @@ function activeQNum(){var m=/Q([1-4])/.exec(WB.activeQuarter||'');return m?m[1]:
 function ensureScorecard(){if(!WB.scorecard||!WB.scorecard.people){WB.scorecard=JSON.parse(JSON.stringify(BAKED_SCORECARD));return true;}return false;}
 /* One-time import of Build-team Q2 2026 rocks from ClickUp (appends, never overwrites) */
 var BAKED_BUILD_ROCKS=[{"id":"cu_dy2jzure","title":"Presidents underwriting by CEO","dim":"","dept":"","owner":"Fausto Rodriguez","score":"3","weight":"","desc":"PortCo: Ownershift","status":"On Track","comments":[],"subrocks":[]},{"id":"cu_x8838enz","title":"[OSI] At least 15 calls with investors","dim":"","dept":"","owner":"Renata Yamao, Fausto Rodriguez","score":"4","weight":"","desc":"PortCo: Ownershift","status":"Not Started","comments":[],"subrocks":[]},{"id":"cu_mqep3e49","title":"Renegotiate seller notes to a $40k+ monthly reduction in seller P&I for H2 2026","dim":"","dept":"","owner":"Fausto Rodriguez","score":"3","weight":"","desc":"PortCo: Ownershift","status":"On Track","comments":[],"subrocks":[]},{"id":"cu_ts4arp7s","title":"Design & approve a value creation plan for two PortCos","dim":"","dept":"","owner":"Leonardo Gonzalez","score":"2","weight":"","desc":"PortCo: Ownershift","status":"On Track","comments":[],"subrocks":[]},{"id":"cu_8xlghj3j","title":"ZBB exercise applied to all PortCos","dim":"","dept":"","owner":"Leonardo Gonzalez","score":"3","weight":"","desc":"PortCo: Ownershift","status":"On Track","comments":[],"subrocks":[]},{"id":"cu_xf2auwgf","title":"Achieve 300k+ of PortCo EBITDA per month on average in Q2","dim":"","dept":"","owner":"Fausto Rodriguez","score":"3","weight":"","desc":"PortCo: Ownershift","status":"On Track","comments":[],"subrocks":[]},{"id":"cu_n0wmoiwz","title":"Achieve cash flow positivity with PIK schedule by June 2026","dim":"","dept":"","owner":"Fausto Rodriguez","score":"5","weight":"","desc":"PortCo: Ownershift","status":"On Track","comments":[],"subrocks":[]},{"id":"cu_wpqeg5sv","title":"Launch satelitte clinic","dim":"","dept":"","owner":"Zina Ajlouny","score":"4","weight":"","desc":"PortCo: Wellnest","status":"At Risk","comments":[],"subrocks":[]},{"id":"cu_t21jooei","title":"Increase NPCs to 60 by June","dim":"","dept":"","owner":"Zina Ajlouny","score":"4","weight":"","desc":"PortCo: Wellnest","status":"On Track","comments":[],"subrocks":[]},{"id":"cu_nq7cqdrf","title":"Wellnest 2MM+ termsheet","dim":"","dept":"","owner":"Renata Yamao, Fausto Rodriguez, Zina Ajlouny","score":"5","weight":"","desc":"PortCo: Wellnest","status":"At Risk","comments":[],"subrocks":[]},{"id":"cu_e27cyorw","title":"Build case for $5MM+ investment with actionable opportunity","dim":"","dept":"","owner":"Zina Ajlouny, Leonardo Gonzalez","score":"4","weight":"","desc":"PortCo: Wellnest","status":"On Track","comments":[],"subrocks":[]},{"id":"cu_86etlh7u","title":"Conclude negotiation to get out of Landover with no more than 1 year rent payment","dim":"","dept":"","owner":"Zina Ajlouny","score":"2","weight":"","desc":"PortCo: Wellnest","status":"On Track","comments":[],"subrocks":[]},{"id":"cu_ldqhn0ly","title":"OBGYN Staffing Model for managing Ogden Clinic Almost Autonomously","dim":"","dept":"","owner":"Sean Park, Zina Ajlouny","score":"2","weight":"","desc":"PortCo: Wellnest","status":"Not Started","comments":[],"subrocks":[]},{"id":"cu_g05chyy5","title":"Achieve 45 IVF cycles in the quarter","dim":"","dept":"","owner":"Zina Ajlouny","score":"4","weight":"","desc":"PortCo: Wellnest","status":"Not Started","comments":[],"subrocks":[]},{"id":"cu_qszhiisu","title":"Redlines for Wellnest and go/nogo meeting","dim":"","dept":"","owner":"Zina Ajlouny, Leonardo Gonzalez","score":"1","weight":"","desc":"PortCo: Wellnest","status":"Done","comments":[],"subrocks":[]},{"id":"cu_89niv13s","title":"Conclude transition Dr Saba to Dr B in the Wellnest PC","dim":"","dept":"","owner":"Renata Yamao","score":"2","weight":"","desc":"PortCo: Wellnest","status":"On Track","comments":[],"subrocks":[]},{"id":"cu_8d1xftr0","title":"Achieve 150 patients+ by end of June","dim":"","dept":"","owner":"Leonardo Gonzalez, Fausto Rodriguez","score":"4","weight":"","desc":"PortCo: Bloomwell","status":"Done","comments":[],"subrocks":[]},{"id":"cu_ye4vmei4","title":"Design new Value Based Care Program","dim":"","dept":"","owner":"Leonardo Gonzalez, Fausto Rodriguez","score":"3","weight":"","desc":"PortCo: Bloomwell","status":"On Track","comments":[],"subrocks":[]},{"id":"cu_l7bxp6ch","title":"Hire New Head of People","dim":"","dept":"","owner":"Sean Park, Leonardo Gonzalez, Fausto Rodriguez","score":"3","weight":"","desc":"PortCo: Bloomwell","status":"Done","comments":[],"subrocks":[]},{"id":"cu_21cw2upy","title":"[BW] Implement cash flow map","dim":"","dept":"","owner":"Renata Yamao, Leonardo Gonzalez","score":"3","weight":"","desc":"PortCo: Bloomwell","status":"Done","comments":[],"subrocks":[]},{"id":"cu_nbxo1id2","title":"Implement floating BCBA solution","dim":"","dept":"","owner":"Leonardo Gonzalez, Fausto Rodriguez","score":"1","weight":"","desc":"PortCo: Bloomwell","status":"Not Started","comments":[],"subrocks":[]},{"id":"cu_y6wryexb","title":"Get a solution that allows no burn in Elkorn","dim":"","dept":"","owner":"Fausto Rodriguez","score":"2","weight":"","desc":"PortCo: Bloomwell","status":"Not Started","comments":[],"subrocks":[]},{"id":"cu_s94e7aaf","title":"Identify next two states to expand","dim":"","dept":"","owner":"Fausto Rodriguez, Leonardo Gonzalez","score":"2","weight":"","desc":"PortCo: Bloomwell","status":"Not Started","comments":[],"subrocks":[]},{"id":"cu_qjlxmwrg","title":"Implement effective sales and productivity tracking","dim":"","dept":"","owner":"Zina Ajlouny","score":"4","weight":"","desc":"PortCo: Immersiv","status":"On Track","comments":[],"subrocks":[]},{"id":"cu_e61814rb","title":"[IM] Negotiated Termsheet for Series A of at least $5MM and PMV of $50MM+","dim":"","dept":"","owner":"Renata Yamao, Zina Ajlouny, Fausto Rodriguez","score":"5","weight":"","desc":"PortCo: Immersiv","status":"On Track","comments":[],"subrocks":[]},{"id":"cu_u27fu8ev","title":"[IM] Improve FP&A function","dim":"","dept":"","owner":"Renata Yamao, Zina Ajlouny","score":"3","weight":"","desc":"PortCo: Immersiv","status":"On Track","comments":[],"subrocks":[]},{"id":"cu_lgnp73tb","title":"Have direct and close relationship with full team, particularly COO","dim":"","dept":"","owner":"Zina Ajlouny","score":"1","weight":"","desc":"PortCo: Immersiv","status":"On Track","comments":[],"subrocks":[]},{"id":"cu_iwos3qd3","title":"Get a termsheet for a backup liquidity facility","dim":"","dept":"","owner":"Fausto Rodriguez, Leonardo Gonzalez","score":"1","weight":"","desc":"PortCo: Immersiv","status":"At Risk","comments":[],"subrocks":[]},{"id":"cu_3arhv5kk","title":"Series A termsheet for $6MM on $40MM+ or $2MM+ SAFE","dim":"","dept":"","owner":"Zina Ajlouny, Renata Yamao","score":"5","weight":"","desc":"PortCo: Maro","status":"At Risk","comments":[],"subrocks":[]},{"id":"cu_padcxvpq","title":"Hire COO","dim":"","dept":"","owner":"Sean Park, Zina Ajlouny","score":"4","weight":"","desc":"PortCo: Maro","status":"Not Started","comments":[],"subrocks":[]},{"id":"cu_xz42gv6q","title":"Reduce burn by at least 30% into Q3","dim":"","dept":"","owner":"Zina Ajlouny","score":"3","weight":"","desc":"PortCo: Maro","status":"On Track","comments":[],"subrocks":[]},{"id":"cu_18srwxaz","title":"Get $50k of revenue in the quarter","dim":"","dept":"","owner":"Zina Ajlouny","score":"3","weight":"","desc":"PortCo: Maro","status":"At Risk","comments":[],"subrocks":[]},{"id":"cu_9q4sn26p","title":"Redlines for Maro and go/no-go decision","dim":"","dept":"","owner":"Zina Ajlouny","score":"1","weight":"","desc":"PortCo: Maro","status":"Not Started","comments":[],"subrocks":[]},{"id":"cu_b8xdvn9k","title":"Have the first Chicago Center Location ready to receive cars","dim":"","dept":"","owner":"Fausto Rodriguez, Leonardo Gonzalez","score":"4","weight":"","desc":"PortCo: Calibright","status":"Done","comments":[],"subrocks":[]},{"id":"cu_2diz1zuz","title":"Sign lease for the second location in Chicago","dim":"","dept":"","owner":"Fausto Rodriguez, Leonardo Gonzalez","score":"2","weight":"","desc":"PortCo: Calibright","status":"On Track","comments":[],"subrocks":[]},{"id":"cu_1huly8ci","title":"Hire 2 ADAs Technicians","dim":"","dept":"","owner":"Leonardo Gonzalez, Sean Park","score":"3","weight":"","desc":"PortCo: Calibright","status":"Done","comments":[],"subrocks":[]},{"id":"cu_gtsh3qj6","title":"Have GTM materials ready to go","dim":"","dept":"","owner":"Leonardo Gonzalez","score":"5","weight":"","desc":"PortCo: Calibright","status":"Done","comments":[],"subrocks":[]},{"id":"cu_r564g2tk","title":"Establish partnership with 2 collision shops","dim":"","dept":"","owner":"Leonardo Gonzalez","score":"4","weight":"","desc":"PortCo: Calibright","status":"Done","comments":[],"subrocks":[]}];
+/* ============================================================
+   WEEKLY TO-DOS (global, week-dated; optional rock link)
+   ============================================================ */
+var TODO_ROSTER=["Fausto","Leo","Leticia","Mariana","Matt","Renata","Sean","Molly","Ygor","Zina"];
+var TODO_STATUS=['To Do','In Progress','Done','Not Done','Cancelled'];
+var TODO_PILL={'To Do':'p-ns','In Progress':'p-ar','Done':'p-ot','Not Done':'p-up','Cancelled':'p-cancel'};
+var BAKED_TODOS=[{"id":"td_cz0ko9xx","owner":"Leo","weekStart":"2026-06-29","desc":"Q3 rocks definition / review for Bloomwell","status":"In Progress","time":"2h","notes":"","rockId":""},{"id":"td_3zpzl6dd","owner":"Leo","weekStart":"2026-06-29","desc":"Q3 rocks definition / review for Cedar Brands","status":"In Progress","time":"2h","notes":"","rockId":""},{"id":"td_75hxm0zg","owner":"Leo","weekStart":"2026-06-29","desc":"Q3 rocks definition / review for Ownershift","status":"In Progress","time":"2h","notes":"","rockId":""},{"id":"td_fs05icyr","owner":"Leo","weekStart":"2026-06-29","desc":"Q3 rocks definition / review for Calibright","status":"In Progress","time":"2h","notes":"","rockId":""},{"id":"td_6tqisr1s","owner":"Leo","weekStart":"2026-06-29","desc":"Implementing rocks / subrocks into PortCo sites","status":"In Progress","time":"3h","notes":"Blocker: Getting sites live","rockId":""},{"id":"td_6sn878g7","owner":"Leo","weekStart":"2026-06-29","desc":"Mystery shopping CKO Pricing vs Competitors","status":"In Progress","time":"4h+","notes":"","rockId":""},{"id":"td_disg8nmv","owner":"Leo","weekStart":"2026-06-29","desc":"Ownershift finding contacts for relevant lenders","status":"In Progress","time":"4h","notes":"","rockId":""},{"id":"td_vzjnbm75","owner":"Leo","weekStart":"2026-06-29","desc":"Bloomwell Value Based Care follow on analysis","status":"In Progress","time":"4h+","notes":"Blocker: Waiting on Nick for additional data","rockId":""},{"id":"td_qnenecjm","owner":"Leo","weekStart":"2026-06-29","desc":"Drafting RACI / \"Downing Way\" SOP","status":"In Progress","time":"4h+","notes":"","rockId":""},{"id":"td_h016ohb2","owner":"Leo","weekStart":"2026-06-29","desc":"Outreach to lenders alternate contacts","status":"Done","time":"2h","notes":"","rockId":""},{"id":"td_bnq047dg","owner":"Leo","weekStart":"2026-06-29","desc":"Calibright Pipedrive improvements follow up","status":"In Progress","time":"3h","notes":"Waiting on Brian's first draft for review","rockId":""},{"id":"td_owywafdm","owner":"Leo","weekStart":"2026-06-29","desc":"Immersiv finalize new deck for interested lenders","status":"In Progress","time":"2h","notes":"","rockId":""},{"id":"td_2i1b0feg","owner":"Leo","weekStart":"2026-06-29","desc":"Get Cedar's funding plan approved for Q3","status":"In Progress","time":"1h","notes":"","rockId":""},{"id":"td_ek0mvb2p","owner":"Renata","weekStart":"2026-06-29","desc":"Kick off PortCo Review with PortCos","status":"In Progress","time":"2h","notes":"Blocker: Pending Build team alignment with CEOs","rockId":""},{"id":"td_i6e4kxhy","owner":"Renata","weekStart":"2026-06-29","desc":"Test PortCo Review tool for each PortCo","status":"To Do","time":"2h","notes":"Look for bugs before deployment","rockId":""},{"id":"td_mu50b3y1","owner":"Renata","weekStart":"2026-06-29","desc":"[Fund II] Fund Platform Description (materials)","status":"To Do","time":"2h","notes":"","rockId":""},{"id":"td_nzk3e3k4","owner":"Renata","weekStart":"2026-06-29","desc":"[Fund II] Fund Financials (materials)","status":"To Do","time":"1h","notes":"","rockId":""},{"id":"td_2046xn3y","owner":"Renata","weekStart":"2026-06-29","desc":"[Fundraising] Immersiv - 50 new contacts","status":"To Do","time":"4h+","notes":"","rockId":""},{"id":"td_osnrlu19","owner":"Renata","weekStart":"2026-06-29","desc":"[Fundraising] Wellnest - 50 new contacts","status":"To Do","time":"4h+","notes":"","rockId":""},{"id":"td_a77vyy05","owner":"Renata","weekStart":"2026-06-29","desc":"[Fundraising] Wellnest - Update Data Room","status":"In Progress","time":"2h","notes":"Blocker: Pitch Deck with Zina","rockId":""},{"id":"td_lvn3mnkf","owner":"Renata","weekStart":"2026-06-29","desc":"[Fundraising] Wellnest - Verify FUP status","status":"To Do","time":"30 min","notes":"","rockId":""},{"id":"td_oiy0cwhi","owner":"Renata","weekStart":"2026-06-29","desc":"Kick off Weekly to-do tracker with the team","status":"Done","time":"30 min","notes":"","rockId":""},{"id":"td_11vn5d7o","owner":"Renata","weekStart":"2026-06-29","desc":"[admin] Close/ Review Team clockify for the quarter","status":"To Do","time":"1h","notes":"","rockId":""},{"id":"td_j48o7gct","owner":"Renata","weekStart":"2026-06-29","desc":"[admin] Finalize Rocks setting/ tool","status":"To Do","time":"1h","notes":"","rockId":""},{"id":"td_fjz8px8c","owner":"Renata","weekStart":"2026-06-29","desc":"Tech Review for Maro","status":"To Do","time":"2h","notes":"Get in touch with Luciano","rockId":""},{"id":"td_q8koye8n","owner":"Renata","weekStart":"2026-06-29","desc":"Winding down AP","status":"To Do","time":"1h","notes":"Share legal docs with legal counsel + wind down tech","rockId":""}];
+function ensureTodos(){if(!Array.isArray(WB.todos)){WB.todos=[];return true;}return false;}
+function importTodos(){ensureTodos();var have={};WB.todos.forEach(function(t){if(t.id)have[t.id]=1;});var del=WB.deleted||[];var changed=false;BAKED_TODOS.forEach(function(t){if(!have[t.id]&&del.indexOf(t.id)<0){WB.todos.push(JSON.parse(JSON.stringify(t)));changed=true;}});return changed;}
+function mondayOf(d){d=new Date(d);var day=(d.getDay()+6)%7;d.setDate(d.getDate()-day);d.setHours(0,0,0,0);return d;}
+function isoDate(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
+function currentWeekStart(){return isoDate(mondayOf(new Date()));}
+function weekLabel(iso){var d=new Date(iso+'T00:00:00');if(isNaN(d))return 'Week';return 'Week of '+MONTHS_ABBR[d.getMonth()]+' '+d.getDate();}
+function allRocksAllQuarters(){var a=[];Object.keys(WB.quarters||{}).forEach(function(qk){var q=WB.quarters[qk];['ideationRocks','talentRocks','buildRocks','opsRocks','ceoRocks'].forEach(function(k){(q[k]||[]).forEach(function(r){a.push({rock:r,q:qk});});});});return a;}
+function findRockById(id){var f=allRocksAllQuarters().filter(function(x){return x.rock.id===id;})[0];return f?f.rock:null;}
+function td2sub(s){return {'To Do':'Not Started','In Progress':'On Track','Done':'Done','Not Done':'At Risk','Cancelled':'Cancelled'}[s]||'Not Started';}
+function sub2td(s){return {'Not Started':'To Do','On Track':'In Progress','Done':'Done','At Risk':'Not Done','Cancelled':'Cancelled','Unplanned':'To Do'}[s]||'To Do';}
+function todoSubOf(t){if(!t.subId||!t.rockId)return null;var r=findRockById(t.rockId);if(!r)return null;return (r.subrocks||[]).find(function(s){return s.id===t.subId;})||null;}
+function pushTodoToSub(t){var s=todoSubOf(t);if(!s)return;s.title=t.desc;s.owner=t.owner;if(t.weekStart)s.targetDate=t.weekStart;var st=td2sub(t.status);s.status=st;if(st==='Done'){if(!s.doneDate)s.doneDate=t.weekStart||currentWeekStart();}else{s.doneDate='';}}
+function pushSubToTodo(s){if(!s.todoId)return;var t=(WB.todos||[]).find(function(x){return x.id===s.todoId;});if(!t)return;t.desc=s.title;t.owner=s.owner;if(s.targetDate)t.weekStart=isoDate(mondayOf(new Date(s.targetDate+'T00:00:00')));t.status=sub2td(subStatus(s));}
+function relinkTodo(t,newRockId){
+  if(t.subId&&t.rockId&&t.rockId!==newRockId){var or=findRockById(t.rockId);if(or)or.subrocks=(or.subrocks||[]).filter(function(s){return s.id!==t.subId;});t.subId='';}
+  t.rockId=newRockId;
+  if(!newRockId){t.subId='';return;}
+  if(t.subId&&todoSubOf(t)){pushTodoToSub(t);return;}
+  var r=findRockById(newRockId);if(!r)return;r.subrocks=r.subrocks||[];
+  var st=td2sub(t.status);
+  var sub={id:uid(),title:t.desc,kr:'',owner:t.owner,dept:'',portco:'',score:'',targetDate:t.weekStart||'',doneDate:st==='Done'?(t.weekStart||currentWeekStart()):'',status:st,milestones:['','','','','','','','','','','',''],msNotes:['','','','','','','','','','','',''],todoId:t.id};
+  r.subrocks.push(sub);t.subId=sub.id;
+}
+function todoSet(id,field,val){var t=(WB.todos||[]).find(function(x){return x.id===id;});if(!t)return;val=(val&&val.trim)?val.trim():val;if(field==='rockId'){relinkTodo(t,val);}else{t[field]=val;if(t.subId)pushTodoToSub(t);}save();render(CUR);}
+function addTodo(owner,e){if(e)e.stopPropagation();WB.todos=WB.todos||[];WB.todos.push({id:uid(),owner:owner,weekStart:currentWeekStart(),desc:'',status:'To Do',time:'',notes:'',rockId:''});save();render(CUR);}
+function addTodoForRock(rid){WB.todos=WB.todos||[];var t={id:uid(),owner:'',weekStart:currentWeekStart(),desc:'New to-do',status:'To Do',time:'',notes:'',rockId:'',subId:''};WB.todos.push(t);relinkTodo(t,rid);save();rerenderCurrent();}
+function delTodo(id){var t=(WB.todos||[]).find(function(x){return x.id===id;});if(t&&t.subId&&t.rockId){var r=findRockById(t.rockId);if(r)r.subrocks=(r.subrocks||[]).filter(function(s){return s.id!==t.subId;});tomb(t.subId);}tomb(id);WB.todos=(WB.todos||[]).filter(function(x){return x.id!==id;});save();render(CUR);}
+function scToggle2(key){_scOpen[key]=_scOpen[key]===false?true:false;render(CUR);}
+function rockLinkSelect(t){
+  var q=WB.quarters[WB.activeQuarter]||{};var rocks=[];
+  ['ideationRocks','talentRocks','buildRocks','opsRocks','ceoRocks'].forEach(function(k){(q[k]||[]).forEach(function(r){rocks.push(r);});});
+  var owner=(t.owner||'').trim();
+  var assoc=rocks.filter(function(r){
+    if(!owner)return true;
+    if(ownersOf(r).indexOf(owner)>=0)return true;
+    return (r.subrocks||[]).some(function(s){return ownersOf(s).indexOf(owner)>=0;});
+  });
+  if(t.rockId&&!assoc.some(function(r){return r.id===t.rockId;})){var cur=allRocksAllQuarters().filter(function(x){return x.rock.id===t.rockId;})[0];if(cur)assoc=[cur.rock].concat(assoc);}
+  return '<select onchange="todoSet(\''+t.id+'\',\'rockId\',this.value)"><option value="">— no rock —</option>'+assoc.map(function(r){return '<option value="'+r.id+'"'+(t.rockId===r.id?' selected':'')+'>'+esc((r.title||'untitled').slice(0,44))+'</option>';}).join('')+'</select>';
+}
+function todoStatusSel(id,cur){return '<select class="ministatus '+(TODO_PILL[cur]||'p-ns')+'" onclick="event.stopPropagation()" onchange="todoSet(\''+id+'\',\'status\',this.value)">'+TODO_STATUS.map(function(s){return '<option'+(cur===s?' selected':'')+'>'+esc(s)+'</option>';}).join('')+'</select>';}
+function renderTodos(){
+  ensureTodos();var p=$('#panel-todos');
+  var by={};TODO_ROSTER.forEach(function(n){by[n]=[];});
+  (WB.todos||[]).forEach(function(t){(by[t.owner||'Unassigned']=by[t.owner||'Unassigned']||[]).push(t);});
+  var names=[];TODO_ROSTER.forEach(function(n){names.push(n);});Object.keys(by).forEach(function(n){if(names.indexOf(n)<0)names.push(n);});
+  var sel=getDashFilter('todo');
+  var h='<div class="filt"><span class="lbl">Person:</span><select id="filt-todo" onchange="setDashFilter(\'todo\',this.value)"><option value="">All individuals</option>'+names.map(function(n){return '<option'+(sel===n?' selected':'')+'>'+esc(n)+'</option>';}).join('')+'</select></div>';
+  names.filter(function(n){return !sel||sel===n;}).forEach(function(n){
+    var items=(by[n]||[]).slice().sort(function(a,b){return (a.weekStart||'').localeCompare(b.weekStart||'');});
+    var openCnt=items.filter(function(t){return t.status!=='Done';}).length;
+    var key='todo-'+n;var open=_scOpen[key]!==false;
+    h+='<div class="dgrp'+(open?' open':'')+'"><div class="dgrp-hd" onclick="scToggle2(\''+key+'\')"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg><span class="avatar">'+esc(initials(n))+'</span><span class="nm">'+esc(n)+'</span><span class="ct">'+items.length+' to-dos · '+openCnt+' open</span><span class="spacer"></span><button class="btn sm" onclick="addTodo(\''+esc(n).replace(/\x27/g,"")+'\',event)">'+ic2('plus')+'Add</button></div>';
+    h+='<div class="dgrp-bd"><div class="card tablecard" style="margin:0">';
+    if(!items.length)h+='<div class="empty" style="padding:14px">No to-dos yet — click Add.</div>';
+    else{
+      h+='<table class="tbl"><thead><tr><th style="min-width:220px">To-Do</th><th>Rock</th><th>Status</th><th>Time</th><th>Week of</th><th style="min-width:140px">Notes / blockers</th><th></th></tr></thead><tbody>';
+      items.forEach(function(t){
+        h+='<tr><td><input class="todoin" value="'+esc(t.desc)+'" onchange="todoSet(\''+t.id+'\',\'desc\',this.value)"></td>'+
+          '<td>'+rockLinkSelect(t)+'</td>'+
+          '<td>'+todoStatusSel(t.id,t.status)+'</td>'+
+          '<td><input class="num" style="width:46px" value="'+esc(t.time)+'" onchange="todoSet(\''+t.id+'\',\'time\',this.value)"></td>'+
+          '<td><input type="date" value="'+esc(t.weekStart)+'" onchange="todoSet(\''+t.id+'\',\'weekStart\',this.value)"></td>'+
+          '<td><input class="todoin" value="'+esc(t.notes)+'" onchange="todoSet(\''+t.id+'\',\'notes\',this.value)"></td>'+
+          '<td><button class="btn-del" onclick="delTodo(\''+t.id+'\')">✕</button></td></tr>';
+      });
+      h+='</tbody></table>';
+    }
+    h+='</div></div></div>';
+  });
+  p.innerHTML=h;
+}
+function renderThisWeek(){
+  ensureTodos();var p=$('#panel-thisweek');var ws=currentWeekStart();
+  var wsD=new Date(ws+'T00:00:00');var weD=new Date(wsD);weD.setDate(wsD.getDate()+7);
+  var items=(WB.todos||[]).filter(function(t){return t.weekStart===ws;});
+  var dueSubs=[];allRocksAllQuarters().forEach(function(x){(x.rock.subrocks||[]).forEach(function(s){if(s.targetDate){var d=new Date(s.targetDate+'T00:00:00');if(!isNaN(d)&&d>=wsD&&d<weD&&subStatus(s)!=='Done')dueSubs.push({s:s,rock:x.rock,q:x.q});}});});
+  var by={};items.forEach(function(t){(by[t.owner||'Unassigned']=by[t.owner||'Unassigned']||[]).push(t);});
+  var people=Object.keys(by);
+  var h='<div class="filt"><span class="tag">'+esc(weekLabel(ws))+'</span><span class="lbl">— current week</span></div>';
+  if(!people.length&&!dueSubs.length){h+=emptyState('spark','Nothing scheduled this week','Add to-dos in the To-Dos tab, or set sub-rock due dates.');p.innerHTML=h;return;}
+  people.forEach(function(n){
+    h+='<div class="sec-head"><h2>'+esc(n)+'</h2><span class="sub">'+by[n].length+' to-dos</span></div><div class="card" style="padding:4px 0">';
+    by[n].slice().sort(function(a,b){return TODO_STATUS.indexOf(a.status)-TODO_STATUS.indexOf(b.status);}).forEach(function(t){
+      h+='<div class="drow"><div class="grow"><div>'+esc(t.desc||'(untitled)')+'</div>'+(t.notes?'<div class="rname">'+esc(t.notes)+'</div>':'')+'</div>'+(t.time?'<span class="tag">'+esc(t.time)+'</span>':'')+todoStatusSel(t.id,t.status)+'</div>';
+    });
+    h+='</div>';
+  });
+  if(dueSubs.length){
+    h+='<div class="sec-head"><h2>Sub-rocks due this week</h2><span class="sub">'+dueSubs.length+'</span></div><div class="card" style="padding:4px 0">';
+    dueSubs.forEach(function(x){h+='<div class="drow"><span class="avatar">'+esc(initials(x.s.owner))+'</span><div class="grow"><div>'+esc(x.s.title||'(untitled)')+'</div><div class="rname">'+esc(x.rock.title||'')+' · '+esc(x.q)+(x.s.portco?' · '+esc(x.s.portco):'')+'</div></div><span class="tag soon">due '+esc(fmtDate(x.s.targetDate))+'</span>'+chip(subStatus(x.s))+'</div>';});
+    h+='</div>';
+  }
+  p.innerHTML=h;
+}
+function todosTab(type,rock){
+  ensureTodos();var items=(WB.todos||[]).filter(function(t){return t.rockId===rock.id;});
+  var h='<div style="margin-bottom:8px"><button class="btn sm" onclick="addTodoForRock(\''+rock.id+'\')">'+ic2('plus')+'Add to-do for this rock</button></div>';
+  if(!items.length)return h+'<div class="empty" style="padding:18px">No to-dos linked to this rock yet.</div>';
+  h+='<div class="card tablecard"><table class="tbl"><thead><tr><th>To-Do</th><th>Owner</th><th>Status</th><th>Week of</th><th></th></tr></thead><tbody>';
+  items.forEach(function(t){h+='<tr><td><input class="todoin" value="'+esc(t.desc)+'" onchange="todoSet(\''+t.id+'\',\'desc\',this.value)"></td><td><input class="ownin" list="owner-options" value="'+esc(t.owner)+'" onchange="todoSet(\''+t.id+'\',\'owner\',this.value)"></td><td>'+todoStatusSel(t.id,t.status)+'</td><td><input type="date" value="'+esc(t.weekStart)+'" onchange="todoSet(\''+t.id+'\',\'weekStart\',this.value)"></td><td><button class="btn-del" onclick="delTodo(\''+t.id+'\')">✕</button></td></tr>';});
+  h+='</tbody></table></div>';return h;
+}
 function importBuildRocksQ2(){
   var q=WB.quarters['Q2 2026'];
   if(!q){q=ensureWB(blankWorkbook('Q2 2026','2026-04-03'));WB.quarters['Q2 2026']=q;}
   q.buildRocks=q.buildRocks||[];
   var byId={};q.buildRocks.forEach(function(r){if(r.id)byId[r.id]=r;});
   var changed=false;
+  var del=WB.deleted||[];
   BAKED_BUILD_ROCKS.forEach(function(b){
+    if(del.indexOf(b.id)>=0)return;
     var ex=byId[b.id];
     if(!ex){
       var r=JSON.parse(JSON.stringify(b));
@@ -1526,7 +1667,7 @@ function addSupport(){
 }
 function toggleAdd(which){var f=$('#add-'+which);if(f)f.classList.toggle('on');}
 function logSet(which,i,k,v){D[which][i][k]=v;save();updateBadges();}
-function logDel(which,i){D[which].splice(i,1);save();render(which);updateBadges();}
+function logDel(which,i){var e=D[which][i];if(e&&e.id)tomb(e.id);D[which].splice(i,1);save();render(which);updateBadges();}
 
 /* ============================================================
    Shared UI helpers
@@ -1726,8 +1867,9 @@ function boot(){
     if(res.ok&&res.data)_lastRemoteSig=JSON.stringify(res.data);     // baseline for live polling
     var scAdded=ensureScorecard();                                   // load team scorecard if backend has none yet
     var bAdded=importBuildRocksQ2();                                 // one-time append of Build Q2 rocks from ClickUp
+    ensureTodos();var tAdded=importTodos();                          // one-time append of weekly to-dos
     renderQuarterSel();render(CUR);
-    if((scAdded||bAdded)&&res.ok)save();                             // persist imported data once
+    if((scAdded||bAdded||tAdded)&&res.ok)save();                     // persist imported data once
   });
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
