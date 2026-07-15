@@ -265,6 +265,9 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--tx)}
 .dgrp-hd .chev{width:15px;height:15px;color:var(--tx3);transition:transform .15s}
 .drow{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--bdr);font-size:13px}
 .drow:last-child{border-bottom:none}
+.pcrock{cursor:pointer}
+.pcrock .chev{color:var(--tx3);transition:transform .15s;flex:0 0 auto}
+.pcrock .chev.open{transform:rotate(90deg)}
 .drow .grow{flex:1;min-width:0}
 .drow .rname{font-size:11px;color:var(--tx2)}
 
@@ -341,8 +344,9 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--tx)}
 .rmeta-w{flex:0 0 84px}
 .rmeta-d{flex:1}
 .rmeta label{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);font-weight:600;display:block;margin-bottom:5px}
-.rmeta input,.rmeta textarea{width:100%;background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--r);padding:7px 9px;font-size:13px;resize:vertical}
-.rmeta input:focus,.rmeta textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-bg);background:var(--surf)}
+.rmeta input,.rmeta textarea,.rmeta select{width:100%;background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--r);padding:7px 9px;font-size:13px;resize:vertical}
+.rmeta input:focus,.rmeta textarea:focus,.rmeta select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-bg);background:var(--surf)}
+.pctag{background:var(--teal-bg);color:var(--teal-tx);margin-left:2px}
 /* comments */
 .cbox{background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--rlg);padding:12px}
 .cbox .cwho{width:100%;background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r);padding:7px 9px;margin-bottom:8px;font-size:13px}
@@ -1021,11 +1025,15 @@ function statRow(counts,tabKey){
   }).join('')+'</div>';
 }
 function toggleFilter(tabKey,status){D.activeFilter[tabKey]=D.activeFilter[tabKey]===status?null:status;save();render(CUR);}
+var _grpBy={};
+function setGrpBy(t,v){_grpBy[t]=v;render(CUR);}
 function renderRockPanel(type){
   var p=$('#panel-'+type);var rocks=getRocks(type);
   var counts=statusCounts(rocks);
   var h=statRow(counts,type);
   if(rocks.length)h+=completionBar(rocks);
+  var gb=_grpBy[type]||'';
+  if(rocks.length)h+='<div class="filt"><span class="lbl">Group:</span><button class="btn sm'+(!gb?' pri':'')+'" onclick="setGrpBy(\''+type+'\',\'\')">None</button><button class="btn sm'+(gb==='portco'?' pri':'')+'" onclick="setGrpBy(\''+type+'\',\'portco\')">By PortCo</button></div>';
   h+='<div class="addform" id="addform-'+type+'"></div>';
   var flt=D.activeFilter[type];
   var shown=rocks.map(function(r,i){return {r:r,i:i};});
@@ -1033,6 +1041,11 @@ function renderRockPanel(type){
   shown.sort(function(a,b){return SORTORD[rockStatus(a.r)]-SORTORD[rockStatus(b.r)]||((parseFloat(b.r.score)||0)-(parseFloat(a.r.score)||0));});
   if(!rocks.length)h+=emptyState('rocks','No rocks yet','Click “Add Rock” to create your first one for this quarter.');
   else if(!shown.length)h+='<div class="empty">No rocks match this filter.</div>';
+  else if(gb==='portco'){
+    var groups={};shown.forEach(function(o){var pc=(o.r.portco||'').trim()||'— No PortCo';(groups[pc]=groups[pc]||[]).push(o);});
+    var order=PORTCOS.filter(function(pc){return groups[pc];});Object.keys(groups).forEach(function(g){if(order.indexOf(g)<0)order.push(g);});
+    order.forEach(function(pc){h+='<div class="sec-head"><h2>'+esc(pc)+'</h2><span class="sub">'+groups[pc].length+' · '+weightedPct(groups[pc].map(function(o){return o.r;}))+'%</span></div><div class="rocklist">'+groups[pc].map(function(o){return rockCard(type,o.r,o.i);}).join('')+'</div>';});
+  }
   else h+='<div class="rocklist">'+shown.map(function(o){return rockCard(type,o.r,o.i);}).join('')+'</div>';
   p.innerHTML=h;
 }
@@ -1064,6 +1077,7 @@ function rockCard(type,rock,idx,readonly){
   h+='<span class="ttl" '+(readonly?'':'contenteditable onblur="rockSet(\''+type+'\',\''+rock.id+'\',\'title\',this.textContent)"')+' onclick="event.stopPropagation()">'+esc(rock.title||'Untitled rock')+'</span>';
   if(readonly)h+='<span class="owner">'+(rock.owner?esc(rock.owner):'<span style="color:var(--tx3)">unassigned</span>')+'</span>';
   else h+='<input class="ownin ownin-hd" list="owner-options" value="'+esc(rock.owner||'')+'" placeholder="owners (comma-separated)" title="Separate multiple owners with commas" onclick="event.stopPropagation()" onchange="rockSet(\''+type+'\',\''+rock.id+'\',\'owner\',this.value);rerenderCurrent()">';
+  if(rock.portco)h+='<span class="tag pctag">'+esc(rock.portco)+'</span>';
   h+='<span class="spacer"></span>';
   h+=(!readonly&&!(rock.subrocks&&rock.subrocks.length))?statusSelectMini('setRockStatus(\''+type+'\',\''+rock.id+'\',this.value)',st,true):chip(st);
   h+='<div class="progwrap"><div class="prog"><span style="width:'+pct+'%"></span></div></div><span class="pct">'+pct+'%</span>';
@@ -1089,9 +1103,14 @@ function toggleRock(key,e){if(e&&e.target.closest('.btn-del,.ttl'))return;D.expa
 function srTab(key,t){D.srTab[key]=t;save();rerenderCurrent();}
 function rockSet(type,id,k,v){var r=getRocks(type).find(function(x){return x.id===id;});if(r){r[k]=v.trim?v.trim():v;save();}}
 function rockSetWeight(type,id,v){var r=getRocks(type).find(function(x){return x.id===id;});if(r){r.weight=v;save();rerenderCurrent();}}
+function portcoOptsRock(v){return '<option value=""'+(!v?' selected':'')+'>—</option>'+PORTCOS.map(function(pc){return '<option'+(v===pc?' selected':'')+'>'+esc(pc)+'</option>';}).join('');}
+function catOpts(cur){return ROCK_TYPES.map(function(t){return '<option value="'+t+'"'+(t===cur?' selected':'')+'>'+esc(ROCK_LABELS[t].replace(' Rocks',''))+'</option>';}).join('');}
+function moveRock(type,id,newType){if(newType===type)return;var arr=getRocks(type);var idx=arr.map(function(x){return x.id;}).indexOf(id);if(idx<0)return;var r=arr.splice(idx,1)[0];D[ROCK_ARR[newType]]=D[ROCK_ARR[newType]]||[];D[ROCK_ARR[newType]].push(r);save();render(CUR);}
 function rockMeta(type,rock){
   return '<div class="rmeta">'+
     '<div class="rmeta-w"><label>Weight</label><input type="number" min="0" step="1" value="'+esc(rock.weight||'')+'" placeholder="1" title="How much this rock counts toward overall completion" onchange="rockSetWeight(\''+type+'\',\''+rock.id+'\',this.value)" onclick="event.stopPropagation()"></div>'+
+    '<div class="rmeta-w" style="flex:0 0 132px"><label>PortCo</label><select onclick="event.stopPropagation()" onchange="rockSet(\''+type+'\',\''+rock.id+'\',\'portco\',this.value);rerenderCurrent()">'+portcoOptsRock(rock.portco)+'</select></div>'+
+    '<div class="rmeta-w" style="flex:0 0 140px"><label>Category</label><select onclick="event.stopPropagation()" onchange="moveRock(\''+type+'\',\''+rock.id+'\',this.value)">'+catOpts(type)+'</select></div>'+
     '<div class="rmeta-d"><label>Description</label><textarea rows="2" placeholder="What is this rock and why does it matter this quarter?" onclick="event.stopPropagation()" onblur="rockSet(\''+type+'\',\''+rock.id+'\',\'desc\',this.value)">'+esc(rock.desc||'')+'</textarea></div>'+
     '</div>';
 }
@@ -1193,7 +1212,7 @@ function hideAddRock(type){var f=$('#addform-'+type);if(f){f.classList.remove('o
 function addRock(type){
   var t=$('#ar-title-'+type),o=$('#ar-owner-'+type);
   var title=t?t.value.trim():'';if(!title){if(t)t.focus();return;}
-  D[ROCK_ARR[type]].push({id:uid(),title:title,dim:'',owner:o?o.value.trim():'',dept:'',score:'',weight:'',desc:'',comments:[],subrocks:[]});
+  D[ROCK_ARR[type]].push({id:uid(),title:title,dim:'',owner:o?o.value.trim():'',dept:'',portco:'',score:'',weight:'',desc:'',comments:[],subrocks:[]});
   save();hideAddRock(type);render(type);updateBadges();
 }
 function delRock(type,id,e){
@@ -1208,6 +1227,19 @@ function delRock(type,id,e){
 /* ============================================================
    DASHBOARD — By Individual
    ============================================================ */
+var _indSort='';
+function setIndSort(v){_indSort=v;render(CUR);}
+function rockDue(r){var ds=(r.subrocks||[]).filter(function(s){return s.targetDate&&subStatus(s)!=='Done';}).map(function(s){return s.targetDate;});if(!ds.length)return '';ds.sort();return ds[0];}
+function indRockRow(x){
+  var rctrl=(x.rock.subrocks&&x.rock.subrocks.length)?chip(rockStatus(x.rock)):statusSelectMini('setRockStatus(\''+x.type+'\',\''+x.rock.id+'\',this.value)',rockStatus(x.rock),true);
+  var due=rockDue(x.rock);
+  return '<div class="drow"><span class="tag">Rock</span><div class="grow"><div>'+esc(x.rock.title||'(untitled)')+'</div><div class="rname">'+esc(ROCK_LABELS[x.type].replace(' Rocks',''))+' · '+rockPct(x.rock)+'% complete'+(due?' · due '+esc(fmtDate(due)):'')+'</div></div><span class="pct">'+rockPct(x.rock)+'%</span>'+rctrl+'</div>';
+}
+function indSubRow(x){
+  var d=daysUntil(x.sub.targetDate);var tag='';
+  if(subStatus(x.sub)!=='Done'&&d!==null){if(d<0)tag='<span class="tag over">'+(-d)+'d over</span>';else if(d<=14)tag='<span class="tag soon">in '+d+'d</span>';}
+  return '<div class="drow"><span class="tag">Sub</span><div class="grow"><div>'+esc(x.sub.title||'(untitled)')+'</div><div class="rname">'+esc(x.rock.title||'')+(x.sub.portco?' · '+esc(x.sub.portco):'')+(x.sub.targetDate?' · due '+esc(fmtDate(x.sub.targetDate)):'')+'</div></div>'+tag+statusSelectMini('subSet(\''+x.type+'\',\''+x.rock.id+'\',\''+x.sub.id+'\',\'status\',this.value)',subStatus(x.sub))+'</div>';
+}
 function statusSelectMini(handler,cur,rockLevel){
   var opts=['Not Started','On Track','At Risk','Done','Cancelled'];var cls=PILLCLS[cur]||(rockLevel?'p-up':'p-ns');
   var blank=rockLevel?'Unplanned':'—';
@@ -1223,7 +1255,8 @@ function renderDashInd(){
   var names=Object.keys(nm).sort(function(a,b){return ((rby[b]||[]).length+(sby[b]||[]).length)-((rby[a]||[]).length+(sby[a]||[]).length);});
   var sel=getDashFilter('ind');
   var h='<div class="filt"><span class="lbl">Filter:</span><select id="filt-ind" onchange="setDashFilter(\'ind\',this.value)"><option value="">All individuals</option>'+
-    names.map(function(n){return '<option'+(sel===n?' selected':'')+'>'+esc(n)+'</option>';}).join('')+'</select></div>';
+    names.map(function(n){return '<option'+(sel===n?' selected':'')+'>'+esc(n)+'</option>';}).join('')+'</select>'+
+    '<span class="lbl" style="margin-left:12px">Sort:</span><button class="btn sm'+(_indSort!=='due'?' pri':'')+'" onclick="setIndSort(\'\')">Status</button><button class="btn sm'+(_indSort==='due'?' pri':'')+'" onclick="setIndSort(\'due\')">Due date</button></div>';
   if(!names.length){h+=emptyState('user','No owners yet','Assign owners to rocks or sub-rocks to see workload here.');p.innerHTML=h;return;}
   names.filter(function(n){return !sel||sel===n;}).forEach(function(n){
     var rk=rby[n]||[],sb=sby[n]||[];
@@ -1236,15 +1269,14 @@ function renderDashInd(){
     h+='<span class="ct">'+rk.length+' rocks · '+sb.length+' sub-rocks · '+pct+'% done'+(atRisk?' · '+atRisk+' at risk':'')+'</span><span class="spacer"></span>';
     h+='<div style="width:120px"><div class="prog"><span style="width:'+pct+'%"></span></div></div></div>';
     h+='<div class="dgrp-bd"><div class="card" style="padding:4px 0">';
-    rk.sort(function(a,b){return SORTORD[rockStatus(a.rock)]-SORTORD[rockStatus(b.rock)];}).forEach(function(x){
-      var rctrl=(x.rock.subrocks&&x.rock.subrocks.length)?chip(rockStatus(x.rock)):statusSelectMini('setRockStatus(\''+x.type+'\',\''+x.rock.id+'\',this.value)',rockStatus(x.rock),true);
-      h+='<div class="drow"><span class="tag">Rock</span><div class="grow"><div>'+esc(x.rock.title||'(untitled)')+'</div><div class="rname">'+esc(ROCK_LABELS[x.type].replace(' Rocks',''))+' · '+rockPct(x.rock)+'% complete</div></div><span class="pct">'+rockPct(x.rock)+'%</span>'+rctrl+'</div>';
-    });
-    sb.sort(function(a,b){return SORTORD[subStatus(a.sub)]-SORTORD[subStatus(b.sub)];}).forEach(function(x){
-      var d=daysUntil(x.sub.targetDate);var tag='';
-      if(subStatus(x.sub)!=='Done'&&d!==null){if(d<0)tag='<span class="tag over">'+(-d)+'d over</span>';else if(d<=14)tag='<span class="tag soon">in '+d+'d</span>';}
-      h+='<div class="drow"><span class="tag">Sub</span><div class="grow"><div>'+esc(x.sub.title||'(untitled)')+'</div><div class="rname">'+esc(x.rock.title||'')+(x.sub.portco?' · '+esc(x.sub.portco):'')+'</div></div>'+tag+statusSelectMini('subSet(\''+x.type+'\',\''+x.rock.id+'\',\''+x.sub.id+'\',\'status\',this.value)',subStatus(x.sub))+'</div>';
-    });
+    if(_indSort==='due'){
+      var items=[];rk.forEach(function(x){items.push({k:'rock',x:x,date:rockDue(x.rock)});});sb.forEach(function(x){items.push({k:'sub',x:x,date:x.sub.targetDate||''});});
+      items.sort(function(a,b){if(!a.date&&!b.date)return 0;if(!a.date)return 1;if(!b.date)return -1;return a.date.localeCompare(b.date);});
+      items.forEach(function(it){h+=it.k==='rock'?indRockRow(it.x):indSubRow(it.x);});
+    }else{
+      rk.sort(function(a,b){return SORTORD[rockStatus(a.rock)]-SORTORD[rockStatus(b.rock)];}).forEach(function(x){h+=indRockRow(x);});
+      sb.sort(function(a,b){return SORTORD[subStatus(a.sub)]-SORTORD[subStatus(b.sub)];}).forEach(function(x){h+=indSubRow(x);});
+    }
     if(!rk.length&&!sb.length)h+='<div class="empty" style="padding:14px">Nothing assigned.</div>';
     h+='</div></div></div>';
   });
@@ -1275,17 +1307,18 @@ function renderDashPortco(){
     h+='<span class="nm" style="color:var(--teal-tx)">'+esc(pc)+'</span><span class="ct">'+rorder.length+' rocks · '+items.length+' sub-rocks · '+pct+'% done</span><span class="spacer"></span>';
     h+='<div style="width:120px"><div class="prog"><span style="width:'+pct+'%"></span></div></div></div>';
     h+='<div class="dgrp-bd"><div class="card" style="padding:4px 0">';
-    rorder.forEach(function(id){var g=rg[id];
-      h+='<div class="drow"><span class="tag">Rock</span><div class="grow"><div>'+esc(g.rock.title||'(untitled)')+'</div><div class="rname">'+esc(ROCK_LABELS[g.type].replace(' Rocks',''))+' · '+esc(g.rock.owner||'unassigned')+'</div></div><span class="pct">'+rockPct(g.rock)+'%</span>'+chip(rockStatus(g.rock))+'</div>';
-      g.subs.sort(function(a,b){return SORTORD[subStatus(a.sub)]-SORTORD[subStatus(b.sub)];}).forEach(function(x){
-        h+='<div class="drow" style="padding-left:30px">'+avatarStack(ownersOf(x.sub))+'<div class="grow"><div>'+esc(x.sub.title||'(untitled)')+'</div><div class="rname">'+esc(ownersOf(x.sub).join(', ')||'unassigned')+'</div></div>'+chip(subStatus(x.sub))+'</div>';
+    rorder.forEach(function(id){var g=rg[id];var ck=pc+'|'+id;var coll=_pcCollapse[ck];
+      h+='<div class="drow pcrock" onclick="pcToggle(\''+pq+'\',\''+id+'\')"><svg class="chev'+(coll?'':' open')+'" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg><span class="tag">Rock</span><div class="grow"><div>'+esc(g.rock.title||'(untitled)')+'</div><div class="rname">'+esc(ROCK_LABELS[g.type].replace(' Rocks',''))+' · '+esc(g.rock.owner||'unassigned')+' · '+g.subs.length+' sub-rocks</div></div><span class="pct">'+rockPct(g.rock)+'%</span>'+chip(rockStatus(g.rock))+'</div>';
+      if(!coll)g.subs.sort(function(a,b){return SORTORD[subStatus(a.sub)]-SORTORD[subStatus(b.sub)];}).forEach(function(x){
+        h+='<div class="drow" style="padding-left:34px">'+avatarStack(ownersOf(x.sub))+'<div class="grow"><div>'+esc(x.sub.title||'(untitled)')+'</div><div class="rname">'+esc(ownersOf(x.sub).join(', ')||'unassigned')+(x.sub.targetDate?' · due '+esc(fmtDate(x.sub.targetDate)):'')+'</div></div>'+chip(subStatus(x.sub))+'</div>';
       });
     });
     h+='</div></div></div>';
   });
   p.innerHTML=h;
 }
-var _dashFilter={};
+var _dashFilter={};var _pcCollapse={};
+function pcToggle(pc,id){var k=pc+'|'+id;_pcCollapse[k]=!_pcCollapse[k];render(CUR);}
 function getDashFilter(k){return _dashFilter[k]||'';}
 function setDashFilter(k,v){_dashFilter[k]=v;render(CUR);}
 function toggleGrp(kind,name){
